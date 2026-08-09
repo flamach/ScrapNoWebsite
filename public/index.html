@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Entreprises sans site web</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%94%8E%3C/text%3E%3C/svg%3E">
+<script>
+  // Applique le theme avant le premier rendu pour eviter un flash de la mauvaise couleur.
+  (function () {
+    var stored = localStorage.getItem('sansite-theme');
+    var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', theme);
+  })();
+</script>
+<style>
+  :root {
+    --accent: #0a84ff;
+    --accent-2: #7c5cff;
+    --text: #1c1c1e;
+    --text-muted: #6e6e73;
+    --bg-base: #eef1f7;
+    --blob-1: rgba(10, 132, 255, 0.35);
+    --blob-2: rgba(255, 55, 130, 0.22);
+    --blob-3: rgba(124, 92, 255, 0.28);
+    --glass-bg: rgba(255, 255, 255, 0.55);
+    --glass-bg-strong: rgba(255, 255, 255, 0.75);
+    --glass-border: rgba(255, 255, 255, 0.75);
+    --glass-shadow: 0 8px 32px rgba(31, 41, 55, 0.14), 0 1px 1px rgba(255, 255, 255, 0.6) inset;
+    --glass-highlight: rgba(255, 255, 255, 0.55);
+    --row-hover: rgba(10, 132, 255, 0.06);
+    --divider: rgba(60, 60, 67, 0.12);
+    --danger-bg: rgba(255, 59, 48, 0.12);
+    --danger-text: #c22b1f;
+    --success-bg: rgba(52, 199, 89, 0.14);
+    --success-text: #1f7a34;
+    --input-bg: rgba(255, 255, 255, 0.55);
+    --input-border: rgba(60, 60, 67, 0.16);
+    --scrollbar: rgba(120, 120, 128, 0.35);
+  }
+
+  :root[data-theme="dark"] {
+    --text: #f5f5f7;
+    --text-muted: #9a9aa2;
+    --bg-base: #0c0c14;
+    --blob-1: rgba(10, 132, 255, 0.45);
+    --blob-2: rgba(255, 55, 130, 0.3);
+    --blob-3: rgba(124, 92, 255, 0.4);
+    --glass-bg: rgba(32, 32, 42, 0.55);
+    --glass-bg-strong: rgba(38, 38, 48, 0.78);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.55), 0 1px 1px rgba(255, 255, 255, 0.06) inset;
+    --glass-highlight: rgba(255, 255, 255, 0.06);
+    --row-hover: rgba(10, 132, 255, 0.1);
+    --divider: rgba(255, 255, 255, 0.08);
+    --danger-bg: rgba(255, 69, 58, 0.16);
+    --danger-text: #ff6b60;
+    --success-bg: rgba(48, 209, 88, 0.16);
+    --success-text: #4fda75;
+    --input-bg: rgba(20, 20, 28, 0.5);
+    --input-border: rgba(255, 255, 255, 0.12);
+    --scrollbar: rgba(150, 150, 160, 0.35);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg-base);
+    color: var(--text);
+    transition: background 0.4s ease, color 0.4s ease;
+    min-height: 100vh;
+  }
+
+  .backdrop {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    z-index: -1;
+  }
+  .blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(90px);
+    opacity: 0.9;
+    will-change: transform;
+  }
+  .blob-1 {
+    width: 620px; height: 620px;
+    background: var(--blob-1);
+    top: -180px; left: -120px;
+    animation: float1 22s ease-in-out infinite alternate;
+  }
+  .blob-2 {
+    width: 560px; height: 560px;
+    background: var(--blob-2);
+    bottom: -220px; right: -140px;
+    animation: float2 26s ease-in-out infinite alternate;
+  }
+  .blob-3 {
+    width: 480px; height: 480px;
+    background: var(--blob-3);
+    top: 35%; right: 10%;
+    animation: float3 19s ease-in-out infinite alternate;
+  }
+  @keyframes float1 {
+    to { transform: translate(60px, 80px) scale(1.08); }
+  }
+  @keyframes float2 {
+    to { transform: translate(-70px, -50px) scale(1.05); }
+  }
+  @keyframes float3 {
+    to { transform: translate(-50px, 60px) scale(0.95); }
+  }
+
+  .container {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 40px 20px 70px;
+  }
+
+  .top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  h1 {
+    font-size: 26px;
+    font-weight: 700;
+    margin: 0 0 8px;
+    letter-spacing: -0.02em;
+  }
+  p.subtitle {
+    color: var(--text-muted);
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+    max-width: 640px;
+  }
+
+  .theme-toggle {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    box-shadow: var(--glass-shadow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+  .theme-toggle:hover { transform: translateY(-2px) scale(1.04); }
+  .theme-toggle:active { transform: translateY(0) scale(0.96); }
+  .theme-toggle svg { width: 20px; height: 20px; }
+  .theme-toggle .icon-moon { display: none; }
+  :root[data-theme="dark"] .theme-toggle .icon-sun { display: none; }
+  :root[data-theme="dark"] .theme-toggle .icon-moon { display: block; }
+
+  .glass {
+    position: relative;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 26px;
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    box-shadow: var(--glass-shadow);
+    padding: 24px;
+    margin-bottom: 22px;
+    overflow: hidden;
+    animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .glass::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(180deg, var(--glass-highlight), transparent 45%);
+    pointer-events: none;
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    align-items: end;
+    position: relative;
+  }
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .field label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .field input {
+    padding: 11px 14px;
+    border: 1px solid var(--input-border);
+    background: var(--input-bg);
+    border-radius: 14px;
+    font-size: 14px;
+    min-width: 160px;
+    color: var(--text);
+    font-family: inherit;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    -moz-appearance: textfield;
+  }
+  .field input::-webkit-outer-spin-button,
+  .field input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  .field input::placeholder { color: var(--text-muted); opacity: 0.7; }
+  .field input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.18);
+    background: var(--glass-bg-strong);
+  }
+
+  button {
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  }
+  #submit-btn {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: white;
+    padding: 12px 26px;
+    border-radius: 999px;
+    box-shadow: 0 6px 20px rgba(10, 132, 255, 0.35);
+  }
+  #submit-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(10, 132, 255, 0.42); }
+  #submit-btn:active { transform: translateY(0) scale(0.98); }
+  #submit-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  button.secondary {
+    background: var(--glass-bg-strong);
+    color: var(--text);
+    border: 1px solid var(--glass-border);
+    padding: 10px 20px;
+    border-radius: 999px;
+    backdrop-filter: blur(16px);
+  }
+  button.secondary:hover { transform: translateY(-2px); }
+  button.secondary:active { transform: translateY(0) scale(0.97); }
+
+  #status {
+    font-size: 13px;
+    margin-top: 14px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+  }
+
+  .banner {
+    padding: 14px 18px;
+    border-radius: 18px;
+    font-size: 14px;
+    margin-bottom: 20px;
+    display: none;
+    border: 1px solid transparent;
+    backdrop-filter: blur(20px);
+    animation: fadeInUp 0.35s ease both;
+  }
+  .banner.error { background: var(--danger-bg); color: var(--danger-text); display: block; border-color: rgba(255, 59, 48, 0.25); }
+  .banner.success { background: var(--success-bg); color: var(--success-text); display: block; border-color: rgba(52, 199, 89, 0.25); }
+
+  .summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+    position: relative;
+  }
+  .summary .count {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .summary .count strong { color: var(--text); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  th, td {
+    text-align: left;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--divider);
+    vertical-align: top;
+  }
+  th {
+    background: var(--glass-bg-strong);
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    position: sticky;
+    top: 0;
+    backdrop-filter: blur(16px);
+  }
+  tbody tr { transition: background 0.15s ease; }
+  tbody tr:hover td { background: var(--row-hover); }
+  tbody tr:last-child td { border-bottom: none; }
+
+  .table-wrap {
+    max-height: 540px;
+    overflow: auto;
+    border: 1px solid var(--divider);
+    border-radius: 18px;
+    position: relative;
+  }
+  .table-wrap::-webkit-scrollbar { width: 10px; height: 10px; }
+  .table-wrap::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 10px; border: 2px solid transparent; background-clip: padding-box; }
+  .table-wrap::-webkit-scrollbar-track { background: transparent; }
+
+  a.map-link {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(10, 132, 255, 0.1);
+    white-space: nowrap;
+    transition: background 0.2s ease;
+  }
+  a.map-link:hover { background: rgba(10, 132, 255, 0.2); }
+
+  .spinner {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 10px;
+    background: conic-gradient(from 0deg, var(--accent), rgba(10, 132, 255, 0) 75%);
+    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 3px));
+    mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 3px));
+    animation: spin 0.8s linear infinite;
+    flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .empty-state {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 46px 20px;
+    font-size: 14px;
+  }
+  .empty-state .emoji { font-size: 28px; display: block; margin-bottom: 10px; }
+</style>
+</head>
+<body>
+<div class="backdrop">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+</div>
+
+<div class="container">
+  <div class="top-row">
+    <div>
+      <h1>Entreprises sans site web</h1>
+      <p class="subtitle">Recherche via Google Places : indiquez un code postal et une categorie (ex. restaurant, plombier, coiffeur) pour lister les etablissements qui n'ont pas de site web renseigne sur Google. La zone est automatiquement subdivisee en sous-cercles la ou c'est necessaire, sans reglage a faire.</p>
+    </div>
+    <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Changer de theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+    </button>
+  </div>
+
+  <div class="glass">
+    <form id="search-form">
+      <div class="field">
+        <label for="postalCode">Code postal</label>
+        <input type="text" id="postalCode" name="postalCode" placeholder="75011" pattern="\d{5}" maxlength="5" required>
+      </div>
+      <div class="field">
+        <label for="tag">Tag / categorie</label>
+        <input type="text" id="tag" name="tag" placeholder="restaurant" required>
+      </div>
+      <div class="field">
+        <label for="radius">Rayon (metres)</label>
+        <input type="number" id="radius" name="radius" value="4000" min="200" max="50000" step="100">
+      </div>
+      <div class="field">
+        <button type="submit" id="submit-btn">Rechercher</button>
+      </div>
+    </form>
+    <div id="status"></div>
+  </div>
+
+  <div id="banner" class="banner"></div>
+
+  <div class="glass" id="results-card" style="display:none;">
+    <div class="summary">
+      <div class="count" id="summary-text"></div>
+      <button class="secondary" id="download-btn">Telecharger le CSV</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Nom</th>
+            <th>Adresse</th>
+            <th>Telephone</th>
+            <th>Note</th>
+            <th>Avis</th>
+            <th>Types</th>
+            <th>Fiche Google</th>
+          </tr>
+        </thead>
+        <tbody id="results-body"></tbody>
+      </table>
+      <div class="empty-state" id="empty-state" style="display:none;"><span class="emoji">🔍</span>Aucun etablissement sans site web trouve pour cette recherche.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const themeToggle = document.getElementById('theme-toggle');
+themeToggle.addEventListener('click', () => {
+  const current = document.documentElement.getAttribute('data-theme');
+  const next = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('sansite-theme', next);
+});
+
+const form = document.getElementById('search-form');
+const submitBtn = document.getElementById('submit-btn');
+const statusEl = document.getElementById('status');
+const banner = document.getElementById('banner');
+const resultsCard = document.getElementById('results-card');
+const resultsBody = document.getElementById('results-body');
+const summaryText = document.getElementById('summary-text');
+const downloadBtn = document.getElementById('download-btn');
+
+let currentResults = [];
+let currentFilename = 'resultats.csv';
+
+function showBanner(type, message) {
+  banner.className = 'banner ' + type;
+  banner.textContent = message;
+}
+function hideBanner() {
+  banner.className = 'banner';
+  banner.textContent = '';
+}
+function escHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, (c) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  hideBanner();
+  resultsCard.style.display = 'none';
+  resultsBody.innerHTML = '';
+
+  const postalCode = document.getElementById('postalCode').value.trim();
+  const tag = document.getElementById('tag').value.trim();
+  const radius = document.getElementById('radius').value.trim();
+
+  submitBtn.disabled = true;
+  statusEl.innerHTML = '<span class="spinner"></span>Recherche en cours (la zone peut etre subdivisee si elle est dense, cela peut prendre de 10 secondes a quelques minutes)...';
+
+  try {
+    const url = `/api/search?postalCode=${encodeURIComponent(postalCode)}&tag=${encodeURIComponent(tag)}&radius=${encodeURIComponent(radius)}`;
+    const r = await fetch(url);
+    const data = await r.json();
+
+    if (!r.ok) {
+      throw new Error(data.error || 'Erreur inconnue');
+    }
+
+    currentResults = data.results;
+    currentFilename = `sans_site_${postalCode}_${tag.replace(/[^a-z0-9]/gi, '_')}.csv`;
+
+    const incompleteNote = data.incomplete
+      ? ' <span style="color:var(--danger-text);">(couverture partielle : zone exceptionnellement dense, reduisez le rayon pour tout couvrir)</span>'
+      : '';
+    summaryText.innerHTML = `Zone : <strong>${escHtml(data.location)}</strong> — ${data.totalFound} etablissement(s) trouve(s) sur ${data.cellsSearched} sous-zone(s) interrogee(s), <strong>${data.withoutWebsiteCount}</strong> sans site web.${incompleteNote}`;
+
+    const emptyState = document.getElementById('empty-state');
+    if (data.results.length === 0) {
+      resultsBody.innerHTML = '';
+      emptyState.style.display = 'block';
+      resultsCard.style.display = 'block';
+    } else {
+      emptyState.style.display = 'none';
+      resultsBody.innerHTML = data.results.map(row => `
+        <tr>
+          <td>${escHtml(row.nom)}</td>
+          <td>${escHtml(row.adresse)}</td>
+          <td>${escHtml(row.telephone)}</td>
+          <td>${escHtml(row.note)}</td>
+          <td>${escHtml(row.avis)}</td>
+          <td>${escHtml(row.types)}</td>
+          <td><a class="map-link" href="${escHtml(row.fiche_google)}" target="_blank" rel="noopener">Voir</a></td>
+        </tr>
+      `).join('');
+      resultsCard.style.display = 'block';
+    }
+
+    statusEl.textContent = '';
+    showBanner('success', 'Recherche terminee.');
+  } catch (err) {
+    statusEl.textContent = '';
+    showBanner('error', err.message);
+  } finally {
+    submitBtn.disabled = false;
+  }
+});
+
+downloadBtn.addEventListener('click', () => {
+  if (!currentResults.length) return;
+  const headers = ['Nom', 'Adresse', 'Telephone', 'Note', 'Avis', 'Types', 'Fiche Google'];
+  const keys = ['nom', 'adresse', 'telephone', 'note', 'avis', 'types', 'fiche_google'];
+  const esc = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+  const lines = [headers.map(esc).join(';')];
+  for (const row of currentResults) {
+    lines.push(keys.map(k => esc(row[k])).join(';'));
+  }
+  const csvContent = '﻿' + lines.join('\r\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = currentFilename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+});
+</script>
+</body>
+</html>
