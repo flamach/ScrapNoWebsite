@@ -2,15 +2,34 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { URL } = require('url');
+const nodemailer = require('nodemailer');
+const db = require('./db');
+
+function loadConfig() {
+  try {
+    return JSON.parse(fs.readFileSync(path.join(__dirname, 'config.json'), 'utf8'));
+  } catch {
+    return {};
+  }
+}
 
 function loadApiKey() {
   if (process.env.GOOGLE_API_KEY) return process.env.GOOGLE_API_KEY;
-  try {
-    const config = JSON.parse(fs.readFileSync(path.join(__dirname, 'config.json'), 'utf8'));
-    return config.GOOGLE_API_KEY;
-  } catch {
-    return null;
-  }
+  return loadConfig().GOOGLE_API_KEY || null;
+}
+
+// Renvoie les identifiants SMTP a utiliser pour l'envoi de mails, ou null si
+// la configuration est absente/incomplete (l'envoi reste alors desactive cote
+// serveur, l'UI l'indique clairement plutot que d'echouer silencieusement).
+function loadSmtpConfig() {
+  const config = loadConfig();
+  const host = process.env.SMTP_HOST || config.SMTP_HOST;
+  const user = process.env.SMTP_USER || config.SMTP_USER;
+  const pass = process.env.SMTP_PASS || config.SMTP_PASS;
+  const port = parseInt(process.env.SMTP_PORT || config.SMTP_PORT || '587', 10);
+  const from = process.env.SMTP_FROM || config.SMTP_FROM || user;
+  if (!host || !user || !pass) return null;
+  return { host, port, user, pass, from };
 }
 
 const API_KEY = loadApiKey();
@@ -242,25 +261,257 @@ async function handleSearch(req, res, query) {
       (d) => d && !d.website && d.business_status !== 'CLOSED_PERMANENTLY'
     );
 
+    const contactedMap = db.getContactedMap(withoutWebsite.map((d) => d.place_id));
+
     sendJSON(res, 200, {
       location: geo.label,
       totalFound: uniquePlaces.length,
       withoutWebsiteCount: withoutWebsite.length,
       cellsSearched: grid.cellsSearched,
       incomplete: grid.budgetExhausted || grid.depthExhausted || placesTruncated,
-      results: withoutWebsite.map((d) => ({
-        nom: d.name || '',
-        adresse: d.formatted_address || '',
-        telephone: d.formatted_phone_number || d.international_phone_number || '',
-        note: d.rating != null ? d.rating : '',
-        avis: d.user_ratings_total != null ? d.user_ratings_total : '',
-        types: (d.types || []).join(', '),
-        fiche_google: `https://www.google.com/maps/place/?q=place_id:${d.place_id}`,
-      })),
+      results: withoutWebsite.map((d) => {
+        const contact = contactedMap.get(d.place_id);
+        return {
+          place_id: d.place_id,
+          nom: d.name || '',
+          adresse: d.formatted_address || '',
+          telephone: d.formatted_phone_number || d.international_phone_number || '',
+          note: d.rating != null ? d.rating : '',
+          avis: d.user_ratings_total != null ? d.user_ratings_total : '',
+          types: (d.types || []).join(', '),
+          fiche_google: `https://www.google.com/maps/place/?q=place_id:${d.place_id}`,
+          contacted: !!contact,
+          contactedAt: contact ? contact.contacted_at : null,
+        };
+      }),
     });
   } catch (err) {
     sendJSON(res, 500, { error: err.message });
   }
+}
+
+// --- Recherche d'email (best-effort) ---------------------------------------
+//
+// Google Places ne fournit jamais d'email. On tente donc de le retrouver en
+// cherchant l'etablissement sur le web (recherche DuckDuckGo HTML, qui ne
+// necessite pas de cle API) puis en scannant les premieres pages de resultat
+// a la recherche d'une adresse email plausible. C'est un heuristique best
+// effort : ca ne trouvera pas toujours un resultat, et le champ reste
+// editable manuellement cote UI.
+
+const EMAIL_REGEX = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+
+const DOMAIN_BLACKLIST = [
+  'sentry.io', 'wixpress.com', 'wix.com', 'godaddy.com', 'schema.org',
+  'example.com', 'w3.org', 'gstatic.com', 'google.com', 'googleapis.com',
+  'googletagmanager.com', 'cloudflare.com', 'doubleclick.net', 'github.com',
+  'npmjs.com', 'jquery.com', 'fontawesome.com', 'sentry-cdn.com',
+  'facebook.com', 'fb.com', 'instagram.com', 'twitter.com', 'x.com',
+  'linkedin.com', 'youtube.com', 'wikipedia.org', 'amazon.fr', 'amazon.com',
+  'indeed.com', 'glassdoor.fr', 'pagesjaunes.fr', 'sentry.wixpress.com',
+];
+
+const LOCALPART_BLACKLIST = [
+  'noreply', 'no-reply', 'donotreply', 'webmaster', 'postmaster', 'abuse', 'privacy',
+];
+
+// Domaines a eviter en resultat de recherche (peu de chances de contenir un
+// email exploitable via un simple fetch HTML, souvent bloques ou en JS pur).
+const SEARCH_RESULT_SKIP_DOMAINS = [
+  'facebook.com', 'instagram.com', 'linkedin.com', 'twitter.com', 'x.com',
+  'youtube.com', 'wikipedia.org', 'amazon.fr', 'amazon.com', 'indeed.com',
+  'glassdoor.fr', 'tripadvisor.fr', 'tripadvisor.com',
+];
+
+function hostnameOf(url) {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '');
+  } catch {
+    return '';
+  }
+}
+
+async function fetchWithTimeout(url, options = {}, timeoutMs = 7000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function webSearchUrls(query, maxResults) {
+  const url = new URL('https://html.duckduckgo.com/html/');
+  url.searchParams.set('q', query);
+
+  const r = await fetchWithTimeout(url, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
+    },
+  });
+  const html = await r.text();
+
+  const urls = [];
+  const linkRegex = /class="result__a"[^>]*href="([^"]+)"/g;
+  let m;
+  while ((m = linkRegex.exec(html)) && urls.length < maxResults) {
+    let href = m[1].replace(/&amp;/g, '&');
+    if (href.includes('duckduckgo.com/l/')) {
+      const uddg = new URL(href, 'https://duckduckgo.com').searchParams.get('uddg');
+      if (uddg) href = decodeURIComponent(uddg);
+    }
+    if (/^https?:\/\//.test(href)) urls.push(href);
+  }
+  return urls;
+}
+
+function extractEmails(html) {
+  const matches = html.match(EMAIL_REGEX) || [];
+  const seen = new Set();
+  const out = [];
+  for (const raw of matches) {
+    const email = raw.toLowerCase();
+    const domain = email.split('@')[1] || '';
+    const localPart = email.split('@')[0] || '';
+    if (seen.has(email)) continue;
+    if (DOMAIN_BLACKLIST.some((d) => domain.endsWith(d))) continue;
+    if (LOCALPART_BLACKLIST.some((l) => localPart.includes(l))) continue;
+    seen.add(email);
+    out.push(email);
+  }
+  return out;
+}
+
+async function findEmailForEstablishment(nom, adresse) {
+  const query = `"${nom}" ${adresse} email contact`;
+
+  let urls;
+  try {
+    urls = await webSearchUrls(query, 6);
+  } catch {
+    return '';
+  }
+
+  for (const url of urls) {
+    const domain = hostnameOf(url);
+    if (!domain || SEARCH_RESULT_SKIP_DOMAINS.some((d) => domain.endsWith(d))) continue;
+
+    try {
+      const r = await fetchWithTimeout(url, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+      });
+      const html = await r.text();
+      const emails = extractEmails(html);
+      if (emails.length) return emails[0];
+    } catch {
+      continue;
+    }
+  }
+  return '';
+}
+
+async function handleFindEmail(req, res, query) {
+  try {
+    const nom = (query.get('nom') || '').trim();
+    const adresse = (query.get('adresse') || '').trim();
+    if (!nom) {
+      return sendJSON(res, 400, { error: 'Nom requis.' });
+    }
+    const email = await findEmailForEstablishment(nom, adresse);
+    sendJSON(res, 200, { email });
+  } catch (err) {
+    sendJSON(res, 500, { error: err.message });
+  }
+}
+
+// --- Envoi de mails ----------------------------------------------------
+
+function readBody(req) {
+  return new Promise((resolve, reject) => {
+    let data = '';
+    req.on('data', (chunk) => {
+      data += chunk;
+      if (data.length > 2_000_000) {
+        reject(new Error('Payload trop volumineux.'));
+        req.destroy();
+      }
+    });
+    req.on('end', () => resolve(data));
+    req.on('error', reject);
+  });
+}
+
+async function handleSendEmail(req, res) {
+  try {
+    const raw = await readBody(req);
+    let payload;
+    try {
+      payload = JSON.parse(raw || '{}');
+    } catch {
+      return sendJSON(res, 400, { error: 'JSON invalide.' });
+    }
+
+    const { recipients, subject, body } = payload;
+    if (!Array.isArray(recipients) || recipients.length === 0) {
+      return sendJSON(res, 400, { error: 'Aucun destinataire selectionne.' });
+    }
+    if (!subject || !body) {
+      return sendJSON(res, 400, { error: "L'objet et le corps du message sont requis." });
+    }
+
+    const smtp = loadSmtpConfig();
+    if (!smtp) {
+      return sendJSON(res, 400, {
+        error:
+          "Configuration SMTP manquante. Ajoutez SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS (et optionnellement SMTP_FROM) dans config.json pour activer l'envoi depuis flamach@quentin-machado.com.",
+      });
+    }
+
+    const transporter = nodemailer.createTransport({
+      host: smtp.host,
+      port: smtp.port,
+      secure: smtp.port === 465,
+      auth: { user: smtp.user, pass: smtp.pass },
+    });
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    const results = await mapLimit(recipients, 3, async (rcpt) => {
+      const to = (rcpt.to || '').trim();
+      if (!emailRegex.test(to)) {
+        return { to, success: false, error: 'Adresse email invalide.' };
+      }
+      try {
+        await transporter.sendMail({
+          from: smtp.from,
+          to,
+          subject: String(subject).replace(/\{\{\s*nom\s*\}\}/g, rcpt.nom || ''),
+          text: String(body).replace(/\{\{\s*nom\s*\}\}/g, rcpt.nom || ''),
+        });
+        if (rcpt.place_id) {
+          db.markContacted({
+            place_id: rcpt.place_id,
+            nom: rcpt.nom,
+            adresse: rcpt.adresse,
+            email: to,
+            contacted_at: new Date().toISOString(),
+          });
+        }
+        return { to, success: true };
+      } catch (err) {
+        return { to, success: false, error: err.message };
+      }
+    });
+
+    sendJSON(res, 200, { results });
+  } catch (err) {
+    sendJSON(res, 500, { error: err.message });
+  }
+}
+
+function handleListContacts(req, res) {
+  sendJSON(res, 200, { contacts: db.listAll() });
 }
 
 function serveStatic(req, res, pathname) {
@@ -288,6 +539,21 @@ const server = http.createServer((req, res) => {
 
   if (parsed.pathname === '/api/search' && req.method === 'GET') {
     handleSearch(req, res, parsed.searchParams);
+    return;
+  }
+
+  if (parsed.pathname === '/api/find-email' && req.method === 'GET') {
+    handleFindEmail(req, res, parsed.searchParams);
+    return;
+  }
+
+  if (parsed.pathname === '/api/send-email' && req.method === 'POST') {
+    handleSendEmail(req, res);
+    return;
+  }
+
+  if (parsed.pathname === '/api/contacts' && req.method === 'GET') {
+    handleListContacts(req, res);
     return;
   }
 

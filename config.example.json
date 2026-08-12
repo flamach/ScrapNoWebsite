@@ -1,3 +1,8 @@
 {
-  "GOOGLE_API_KEY": "VOTRE_CLE_API_GOOGLE_ICI"
+  "GOOGLE_API_KEY": "VOTRE_CLE_API_GOOGLE_ICI",
+  "SMTP_HOST": "smtp.example.com",
+  "SMTP_PORT": 587,
+  "SMTP_USER": "flamach@quentin-machado.com",
+  "SMTP_PASS": "MOT_DE_PASSE_OU_APP_PASSWORD",
+  "SMTP_FROM": "flamach@quentin-machado.com"
 }

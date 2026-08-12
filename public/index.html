@@ -260,6 +260,16 @@
   #submit-btn:active { transform: translateY(0) scale(0.98); }
   #submit-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
 
+  #compose-send {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: white;
+    padding: 12px 26px;
+    border-radius: 999px;
+    box-shadow: 0 6px 20px rgba(10, 132, 255, 0.35);
+  }
+  #compose-send:hover { transform: translateY(-2px); }
+  #compose-send:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
+
   button.secondary {
     background: var(--glass-bg-strong);
     color: var(--text);
@@ -330,6 +340,21 @@
     top: 0;
     backdrop-filter: blur(16px);
   }
+  th.sortable {
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.15s ease;
+  }
+  th.sortable:hover { color: var(--text); }
+  th.sortable::after {
+    content: '';
+    display: inline-block;
+    margin-left: 5px;
+    font-size: 9px;
+    opacity: 0.35;
+  }
+  th.sortable.sort-asc::after { content: '▲'; opacity: 1; color: var(--accent); }
+  th.sortable.sort-desc::after { content: '▼'; opacity: 1; color: var(--accent); }
   tbody tr { transition: background 0.15s ease; }
   tbody tr:hover td { background: var(--row-hover); }
   tbody tr:last-child td { border-bottom: none; }
@@ -377,6 +402,170 @@
     font-size: 14px;
   }
   .empty-state .emoji { font-size: 28px; display: block; margin-bottom: 10px; }
+
+  input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+  th.checkbox-col, td.checkbox-col { width: 34px; text-align: center; }
+
+  .email-cell { min-width: 220px; }
+  .email-input-wrap { display: flex; align-items: center; gap: 6px; }
+  .email-input {
+    flex: 1;
+    padding: 7px 10px;
+    border: 1px solid var(--input-border);
+    background: var(--input-bg);
+    border-radius: 10px;
+    font-size: 13px;
+    color: var(--text);
+    font-family: inherit;
+    min-width: 150px;
+  }
+  .email-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.16);
+  }
+  .email-input.not-found::placeholder { color: var(--danger-text); opacity: 0.8; }
+  .email-status {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .email-retry {
+    flex-shrink: 0;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 2px 4px;
+    border-radius: 8px;
+    line-height: 1;
+  }
+  .email-retry:hover { color: var(--accent); background: var(--row-hover); }
+  .mini-spinner {
+    width: 13px; height: 13px;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, var(--accent), rgba(10, 132, 255, 0) 75%);
+    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 2px));
+    mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 2px));
+    animation: spin 0.8s linear infinite;
+  }
+
+  #send-mail-btn {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: white;
+    padding: 10px 22px;
+    border-radius: 999px;
+    box-shadow: 0 6px 18px rgba(10, 132, 255, 0.3);
+  }
+  #send-mail-btn:hover { transform: translateY(-2px); }
+  #send-mail-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  .summary-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 10, 18, 0.45);
+    backdrop-filter: blur(6px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-card {
+    max-width: 560px;
+    width: 100%;
+    max-height: 88vh;
+    overflow-y: auto;
+    margin: 0;
+    animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .modal-card h2 {
+    font-size: 18px;
+    margin: 0 0 4px;
+  }
+  .modal-card .modal-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin: 0 0 18px;
+  }
+  .modal-field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 14px; }
+  .modal-field label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .modal-field input, .modal-field textarea {
+    padding: 11px 14px;
+    border: 1px solid var(--input-border);
+    background: var(--input-bg);
+    border-radius: 14px;
+    font-size: 14px;
+    color: var(--text);
+    font-family: inherit;
+    resize: vertical;
+  }
+  .modal-field textarea { min-height: 220px; line-height: 1.5; }
+  .modal-field input:focus, .modal-field textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.18);
+  }
+  .modal-hint { font-size: 12px; color: var(--text-muted); margin: -8px 0 14px; }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
+  .modal-results { font-size: 13px; margin-top: 14px; line-height: 1.6; }
+
+  tbody tr.contacted-row td { background: rgba(255, 159, 10, 0.08); }
+  tbody tr.contacted-row:hover td { background: rgba(255, 159, 10, 0.14); }
+  .contacted-badge {
+    display: inline-block;
+    margin-top: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #b9770e;
+    background: rgba(255, 159, 10, 0.16);
+    padding: 2px 8px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  :root[data-theme="dark"] .contacted-badge { color: #ffb454; }
+
+  .duplicate-warning {
+    background: rgba(255, 159, 10, 0.14);
+    border: 1px solid rgba(255, 159, 10, 0.3);
+    color: #b9770e;
+    border-radius: 14px;
+    padding: 12px 16px;
+    font-size: 13px;
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+  :root[data-theme="dark"] .duplicate-warning { color: #ffb454; }
+  .duplicate-warning label { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-weight: 600; cursor: pointer; }
+
+  #history-btn {
+    flex-shrink: 0;
+  }
+
+  .history-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .history-table th, .history-table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--divider); }
+  .history-table th { font-size: 11px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.03em; }
+  .history-wrap { max-height: 60vh; overflow-y: auto; border: 1px solid var(--divider); border-radius: 16px; }
 </style>
 </head>
 <body>
@@ -392,10 +581,13 @@
       <h1>Entreprises sans site web</h1>
       <p class="subtitle">Recherche via Google Places : indiquez un code postal et une categorie (ex. restaurant, plombier, coiffeur) pour lister les etablissements qui n'ont pas de site web renseigne sur Google. La zone est automatiquement subdivisee en sous-cercles la ou c'est necessaire, sans reglage a faire.</p>
     </div>
-    <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Changer de theme">
-      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
-      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-    </button>
+    <div style="display:flex; gap:10px; align-items:flex-start;">
+      <button type="button" class="secondary" id="history-btn">Historique des contacts</button>
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Changer de theme">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      </button>
+    </div>
   </div>
 
   <div class="glass">
@@ -424,17 +616,22 @@
   <div class="glass" id="results-card" style="display:none;">
     <div class="summary">
       <div class="count" id="summary-text"></div>
-      <button class="secondary" id="download-btn">Telecharger le CSV</button>
+      <div class="summary-actions">
+        <button class="secondary" id="send-mail-btn" disabled>Envoyer un mail (<span id="selected-count">0</span>)</button>
+        <button class="secondary" id="download-btn">Telecharger le CSV</button>
+      </div>
     </div>
     <div class="table-wrap">
       <table>
         <thead>
           <tr>
+            <th class="checkbox-col"><input type="checkbox" id="select-all" title="Tout selectionner"></th>
             <th>Nom</th>
             <th>Adresse</th>
             <th>Telephone</th>
-            <th>Note</th>
-            <th>Avis</th>
+            <th class="sortable" data-sort-key="email" title="Trier par email trouve ou non">Email</th>
+            <th class="sortable" data-sort-key="note" title="Trier par note">Note</th>
+            <th class="sortable" data-sort-key="avis" title="Trier par nombre d'avis">Avis</th>
             <th>Types</th>
             <th>Fiche Google</th>
           </tr>
@@ -442,6 +639,51 @@
         <tbody id="results-body"></tbody>
       </table>
       <div class="empty-state" id="empty-state" style="display:none;"><span class="emoji">🔍</span>Aucun etablissement sans site web trouve pour cette recherche.</div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="compose-overlay">
+  <div class="glass modal-card">
+    <h2>Proposer mes services</h2>
+    <p class="modal-sub" id="compose-sub">0 destinataire(s) selectionne(s).</p>
+    <div class="modal-field">
+      <label for="mail-subject">Objet</label>
+      <input type="text" id="mail-subject">
+    </div>
+    <div class="modal-field">
+      <label for="mail-body">Message</label>
+      <textarea id="mail-body"></textarea>
+    </div>
+    <p class="modal-hint">Astuce : <code>{{nom}}</code> est remplace automatiquement par le nom de chaque etablissement.</p>
+    <div id="compose-warning" class="banner error" style="display:none;"></div>
+    <div class="modal-results" id="compose-results"></div>
+    <div class="modal-actions">
+      <button class="secondary" id="compose-cancel">Annuler</button>
+      <button id="compose-send" type="button">Envoyer</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="history-overlay">
+  <div class="glass modal-card" style="max-width:720px;">
+    <h2>Historique des contacts</h2>
+    <p class="modal-sub" id="history-sub">Chargement...</p>
+    <div class="history-wrap">
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>Nom</th>
+            <th>Adresse</th>
+            <th>Email</th>
+            <th>Contacte le</th>
+          </tr>
+        </thead>
+        <tbody id="history-body"></tbody>
+      </table>
+    </div>
+    <div class="modal-actions">
+      <button class="secondary" id="history-close">Fermer</button>
     </div>
   </div>
 </div>
@@ -463,9 +705,37 @@ const resultsCard = document.getElementById('results-card');
 const resultsBody = document.getElementById('results-body');
 const summaryText = document.getElementById('summary-text');
 const downloadBtn = document.getElementById('download-btn');
+const selectAllCheckbox = document.getElementById('select-all');
+const sendMailBtn = document.getElementById('send-mail-btn');
+const selectedCountEl = document.getElementById('selected-count');
+
+const composeOverlay = document.getElementById('compose-overlay');
+const composeSub = document.getElementById('compose-sub');
+const composeWarning = document.getElementById('compose-warning');
+const composeResults = document.getElementById('compose-results');
+const composeCancelBtn = document.getElementById('compose-cancel');
+const composeSendBtn = document.getElementById('compose-send');
+const mailSubjectInput = document.getElementById('mail-subject');
+const mailBodyInput = document.getElementById('mail-body');
+
+const DEFAULT_SUBJECT = "Votre etablissement n'a pas de site internet";
+const DEFAULT_BODY = `Bonjour,
+
+Je me suis apercu que {{nom}} n'avait pas de site internet reference sur Google. C'est souvent une occasion manquee d'etre trouve par de nouveaux clients et de renforcer votre image en ligne.
+
+Je suis developpeur freelance et je propose la creation de sites internet sur mesure, adaptes a votre activite et penses pour faciliter la prise de contact avec vos clients.
+
+Si cela vous interesse, je serais ravi d'en discuter avec vous, sans aucun engagement de votre part.
+
+Bien cordialement,
+Quentin Machado
+flamach@quentin-machado.com`;
 
 let currentResults = [];
 let currentFilename = 'resultats.csv';
+let selectedIds = new Set();
+let emailSearchToken = 0;
+let sortState = { key: null, dir: 1 };
 
 function showBanner(type, message) {
   banner.className = 'banner ' + type;
@@ -479,6 +749,12 @@ function escHtml(s) {
   return String(s ?? '').replace(/[&<>"']/g, (c) => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
   }[c]));
+}
+function formatDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d)) return iso;
+  return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
 form.addEventListener('submit', async (e) => {
@@ -505,6 +781,10 @@ form.addEventListener('submit', async (e) => {
 
     currentResults = data.results;
     currentFilename = `sans_site_${postalCode}_${tag.replace(/[^a-z0-9]/gi, '_')}.csv`;
+    selectedIds = new Set();
+    emailSearchToken++;
+    sortState = { key: null, dir: 1 };
+    updateSortIndicators();
 
     const incompleteNote = data.incomplete
       ? ' <span style="color:var(--danger-text);">(couverture partielle : zone exceptionnellement dense, reduisez le rayon pour tout couvrir)</span>'
@@ -518,11 +798,19 @@ form.addEventListener('submit', async (e) => {
       resultsCard.style.display = 'block';
     } else {
       emptyState.style.display = 'none';
-      resultsBody.innerHTML = data.results.map(row => `
-        <tr>
-          <td>${escHtml(row.nom)}</td>
+      resultsBody.innerHTML = data.results.map((row, idx) => `
+        <tr data-idx="${idx}" class="${row.contacted ? 'contacted-row' : ''}">
+          <td class="checkbox-col"><input type="checkbox" class="row-check" data-idx="${idx}"></td>
+          <td>${escHtml(row.nom)}${row.contacted ? `<br><span class="contacted-badge" title="Deja contacte">✓ Contacte le ${escHtml(formatDate(row.contactedAt))}</span>` : ''}</td>
           <td>${escHtml(row.adresse)}</td>
           <td>${escHtml(row.telephone)}</td>
+          <td class="email-cell">
+            <div class="email-input-wrap">
+              <input type="email" class="email-input" data-idx="${idx}" placeholder="Recherche en cours..." value="">
+              <span class="email-status" data-idx="${idx}"><span class="mini-spinner"></span></span>
+              <button type="button" class="email-retry" data-idx="${idx}" title="Relancer la recherche" style="display:none;">↻</button>
+            </div>
+          </td>
           <td>${escHtml(row.note)}</td>
           <td>${escHtml(row.avis)}</td>
           <td>${escHtml(row.types)}</td>
@@ -530,6 +818,8 @@ form.addEventListener('submit', async (e) => {
         </tr>
       `).join('');
       resultsCard.style.display = 'block';
+      updateSelectionUI();
+      runEmailSearchForAll(emailSearchToken);
     }
 
     statusEl.textContent = '';
@@ -540,6 +830,327 @@ form.addEventListener('submit', async (e) => {
   } finally {
     submitBtn.disabled = false;
   }
+});
+
+// --- Selection multiple ------------------------------------------------
+
+function updateSelectionUI() {
+  selectedCountEl.textContent = String(selectedIds.size);
+  sendMailBtn.disabled = selectedIds.size === 0;
+  const total = currentResults.length;
+  selectAllCheckbox.checked = total > 0 && selectedIds.size === total;
+  selectAllCheckbox.indeterminate = selectedIds.size > 0 && selectedIds.size < total;
+}
+
+resultsBody.addEventListener('change', (e) => {
+  if (!e.target.classList.contains('row-check')) return;
+  const idx = Number(e.target.dataset.idx);
+  if (e.target.checked) selectedIds.add(idx);
+  else selectedIds.delete(idx);
+  updateSelectionUI();
+});
+
+selectAllCheckbox.addEventListener('change', () => {
+  const checked = selectAllCheckbox.checked;
+  // "Tout selectionner" ignore volontairement les etablissements deja
+  // contactes, pour ne pas les re-inclure par erreur dans un envoi groupe.
+  // Ils restent selectionnables individuellement si besoin.
+  selectedIds = checked
+    ? new Set(currentResults.map((r, idx) => (!r.contacted ? idx : null)).filter((idx) => idx !== null))
+    : new Set();
+  resultsBody.querySelectorAll('.row-check').forEach((cb) => {
+    const idx = Number(cb.dataset.idx);
+    cb.checked = selectedIds.has(idx);
+  });
+  updateSelectionUI();
+});
+
+// --- Tri des colonnes ----------------------------------------------------
+
+function emailFoundValue(idx) {
+  const input = resultsBody.querySelector(`.email-input[data-idx="${idx}"]`);
+  return input && input.value.trim() ? 1 : 0;
+}
+
+function getSortValue(idx, key) {
+  const row = currentResults[idx];
+  if (key === 'email') return emailFoundValue(idx);
+  const raw = row[key];
+  return raw === '' || raw == null ? -Infinity : Number(raw);
+}
+
+function updateSortIndicators() {
+  document.querySelectorAll('th.sortable').forEach((th) => {
+    th.classList.remove('sort-asc', 'sort-desc');
+    if (th.dataset.sortKey === sortState.key) {
+      th.classList.add(sortState.dir === 1 ? 'sort-asc' : 'sort-desc');
+    }
+  });
+}
+
+function applySort() {
+  if (!sortState.key) return;
+  // On part de l'ordre actuellement affiche (pas de l'ordre original) : un
+  // tri stable applique successivement sur deux colonnes differentes permet
+  // ainsi un tri combine (ex. cliquer Avis puis Note trie par note, les
+  // egalites etant departagees par l'avis).
+  const indices = Array.from(resultsBody.querySelectorAll('tr[data-idx]')).map((tr) => Number(tr.dataset.idx));
+  indices.sort((a, b) => (getSortValue(a, sortState.key) - getSortValue(b, sortState.key)) * sortState.dir);
+  for (const idx of indices) {
+    const tr = resultsBody.querySelector(`tr[data-idx="${idx}"]`);
+    if (tr) resultsBody.appendChild(tr);
+  }
+  updateSortIndicators();
+}
+
+document.querySelectorAll('th.sortable').forEach((th) => {
+  th.addEventListener('click', () => {
+    const key = th.dataset.sortKey;
+    if (sortState.key === key) sortState.dir *= -1;
+    else { sortState.key = key; sortState.dir = 1; }
+    applySort();
+  });
+});
+
+// --- Recherche automatique d'email -------------------------------------
+
+async function mapLimitClient(items, limit, fn) {
+  let i = 0;
+  async function worker() {
+    while (i < items.length) {
+      const idx = i++;
+      await fn(items[idx], idx);
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+}
+
+function setEmailCellState(idx, { loading, email, notFound }) {
+  const input = resultsBody.querySelector(`.email-input[data-idx="${idx}"]`);
+  const status = resultsBody.querySelector(`.email-status[data-idx="${idx}"]`);
+  const retry = resultsBody.querySelector(`.email-retry[data-idx="${idx}"]`);
+  if (!input) return;
+
+  if (loading) {
+    status.innerHTML = '<span class="mini-spinner"></span>';
+    retry.style.display = 'none';
+    input.placeholder = 'Recherche en cours...';
+  } else {
+    status.innerHTML = '';
+    retry.style.display = 'inline-block';
+    if (email) {
+      input.value = email;
+      input.classList.remove('not-found');
+      input.placeholder = '';
+    } else if (notFound) {
+      input.classList.add('not-found');
+      input.placeholder = 'Non trouve — saisir manuellement';
+    }
+  }
+}
+
+async function searchEmailForRow(idx, token) {
+  const row = currentResults[idx];
+  if (!row) return;
+  setEmailCellState(idx, { loading: true });
+  try {
+    const url = `/api/find-email?nom=${encodeURIComponent(row.nom)}&adresse=${encodeURIComponent(row.adresse)}`;
+    const r = await fetch(url);
+    const data = await r.json();
+    if (token !== emailSearchToken) return;
+    setEmailCellState(idx, { loading: false, email: r.ok ? data.email : '', notFound: !r.ok || !data.email });
+  } catch {
+    if (token !== emailSearchToken) return;
+    setEmailCellState(idx, { loading: false, email: '', notFound: true });
+  }
+}
+
+function runEmailSearchForAll(token) {
+  mapLimitClient(currentResults, 4, async (_row, idx) => {
+    if (token !== emailSearchToken) return;
+    await searchEmailForRow(idx, token);
+  });
+}
+
+resultsBody.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('email-retry')) return;
+  const idx = Number(e.target.dataset.idx);
+  searchEmailForRow(idx, emailSearchToken);
+});
+
+// --- Envoi de mails ------------------------------------------------------
+
+function openComposeModal() {
+  mailSubjectInput.value = DEFAULT_SUBJECT;
+  mailBodyInput.value = DEFAULT_BODY;
+  composeWarning.style.display = 'none';
+  composeResults.innerHTML = '';
+  composeSendBtn.textContent = 'Envoyer';
+
+  const missingEmail = [];
+  const recipients = [];
+  const duplicates = [];
+  for (const idx of selectedIds) {
+    const row = currentResults[idx];
+    const input = resultsBody.querySelector(`.email-input[data-idx="${idx}"]`);
+    const email = input ? input.value.trim() : '';
+    if (!email) {
+      missingEmail.push(row.nom);
+      continue;
+    }
+    recipients.push({ idx, place_id: row.place_id, nom: row.nom, adresse: row.adresse, email });
+    if (row.contacted) duplicates.push(`${row.nom} (le ${formatDate(row.contactedAt)})`);
+  }
+
+  composeSub.textContent = `${recipients.length} destinataire(s) avec email sur ${selectedIds.size} etablissement(s) selectionne(s).`;
+  if (missingEmail.length) {
+    composeWarning.style.display = 'block';
+    composeWarning.textContent = `Sans email, ignore(s) : ${missingEmail.join(', ')}`;
+  }
+
+  const existingBox = document.getElementById('duplicate-warning-box');
+  if (existingBox) existingBox.remove();
+
+  if (duplicates.length) {
+    composeResults.insertAdjacentHTML('beforebegin', `
+      <div class="duplicate-warning" id="duplicate-warning-box">
+        ⚠️ Deja contacte(s) precedemment : ${duplicates.map(escHtml).join(', ')}.
+        <label><input type="checkbox" id="duplicate-confirm"> Je confirme vouloir les recontacter</label>
+      </div>
+    `);
+    const duplicateConfirm = document.getElementById('duplicate-confirm');
+    duplicateConfirm.addEventListener('change', () => {
+      composeSendBtn.disabled = !duplicateConfirm.checked;
+    });
+    composeSendBtn.disabled = true;
+  } else {
+    composeSendBtn.disabled = false;
+  }
+
+  composeOverlay.classList.add('open');
+  composeOverlay._recipients = recipients;
+}
+
+function closeComposeModal() {
+  composeOverlay.classList.remove('open');
+}
+
+sendMailBtn.addEventListener('click', openComposeModal);
+composeCancelBtn.addEventListener('click', closeComposeModal);
+composeOverlay.addEventListener('click', (e) => {
+  if (e.target === composeOverlay) closeComposeModal();
+});
+
+composeSendBtn.addEventListener('click', async () => {
+  const recipients = composeOverlay._recipients || [];
+  if (!recipients.length) {
+    composeWarning.style.display = 'block';
+    composeWarning.textContent = 'Aucun destinataire avec une adresse email valide.';
+    return;
+  }
+
+  const subject = mailSubjectInput.value.trim();
+  const body = mailBodyInput.value.trim();
+  if (!subject || !body) {
+    composeWarning.style.display = 'block';
+    composeWarning.textContent = "L'objet et le message ne peuvent pas etre vides.";
+    return;
+  }
+
+  composeSendBtn.disabled = true;
+  composeSendBtn.textContent = 'Envoi en cours...';
+  composeResults.innerHTML = '';
+
+  try {
+    const r = await fetch('/api/send-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        subject,
+        body,
+        recipients: recipients.map((r) => ({ to: r.email, nom: r.nom, adresse: r.adresse, place_id: r.place_id })),
+      }),
+    });
+    const data = await r.json();
+
+    if (!r.ok) {
+      composeWarning.style.display = 'block';
+      composeWarning.textContent = data.error || 'Erreur inconnue.';
+      return;
+    }
+
+    const okCount = data.results.filter((res) => res.success).length;
+    const failed = data.results.filter((res) => !res.success);
+    composeResults.innerHTML = `<strong>${okCount}/${data.results.length}</strong> email(s) envoye(s) avec succes.` +
+      (failed.length ? `<br>Echecs : ${failed.map((f) => escHtml(f.to) + (f.error ? ' (' + escHtml(f.error) + ')' : '')).join(', ')}` : '');
+    composeSendBtn.textContent = 'Envoyer';
+
+    const nowIso = new Date().toISOString();
+    data.results.forEach((res, i) => {
+      if (!res.success) return;
+      const recipient = recipients[i];
+      const row = currentResults[recipient.idx];
+      row.contacted = true;
+      row.contactedAt = nowIso;
+      const tr = resultsBody.querySelector(`tr[data-idx="${recipient.idx}"]`);
+      if (tr) {
+        tr.classList.add('contacted-row');
+        const nomCell = tr.children[1];
+        if (nomCell && !nomCell.querySelector('.contacted-badge')) {
+          nomCell.insertAdjacentHTML('beforeend', `<br><span class="contacted-badge" title="Deja contacte">✓ Contacte le ${escHtml(formatDate(nowIso))}</span>`);
+        }
+      }
+    });
+
+    if (!failed.length) {
+      showBanner('success', `${okCount} email(s) envoye(s).`);
+      setTimeout(closeComposeModal, 1600);
+    }
+  } catch (err) {
+    composeWarning.style.display = 'block';
+    composeWarning.textContent = err.message;
+    composeSendBtn.textContent = 'Envoyer';
+  } finally {
+    composeSendBtn.disabled = false;
+  }
+});
+
+// --- Historique des contacts --------------------------------------------
+
+const historyBtn = document.getElementById('history-btn');
+const historyOverlay = document.getElementById('history-overlay');
+const historySub = document.getElementById('history-sub');
+const historyBody = document.getElementById('history-body');
+const historyCloseBtn = document.getElementById('history-close');
+
+async function openHistoryModal() {
+  historyOverlay.classList.add('open');
+  historySub.textContent = 'Chargement...';
+  historyBody.innerHTML = '';
+  try {
+    const r = await fetch('/api/contacts');
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || 'Erreur inconnue');
+
+    historySub.textContent = `${data.contacts.length} etablissement(s) contacte(s) au total.`;
+    historyBody.innerHTML = data.contacts.map((c) => `
+      <tr>
+        <td>${escHtml(c.nom)}</td>
+        <td>${escHtml(c.adresse)}</td>
+        <td>${escHtml(c.email)}</td>
+        <td>${escHtml(formatDate(c.contacted_at))}</td>
+      </tr>
+    `).join('') || '<tr><td colspan="4" style="text-align:center; color:var(--text-muted); padding:24px;">Aucun contact enregistre pour le moment.</td></tr>';
+  } catch (err) {
+    historySub.textContent = '';
+    historyBody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--danger-text); padding:24px;">${escHtml(err.message)}</td></tr>`;
+  }
+}
+
+historyBtn.addEventListener('click', openHistoryModal);
+historyCloseBtn.addEventListener('click', () => historyOverlay.classList.remove('open'));
+historyOverlay.addEventListener('click', (e) => {
+  if (e.target === historyOverlay) historyOverlay.classList.remove('open');
 });
 
 downloadBtn.addEventListener('click', () => {
