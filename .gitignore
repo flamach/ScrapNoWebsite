@@ -2,3 +2,5 @@ config.json
 node_modules/
 server.log
 contacts.json
+users.json
+sessions.json

@@ -4,5 +4,6 @@
   "SMTP_PORT": 587,
   "SMTP_USER": "flamach@quentin-machado.com",
   "SMTP_PASS": "MOT_DE_PASSE_OU_APP_PASSWORD",
-  "SMTP_FROM": "flamach@quentin-machado.com"
+  "SMTP_FROM": "flamach@quentin-machado.com",
+  "ADMIN_EMAIL": "flamach@quentin-machado.com"
 }

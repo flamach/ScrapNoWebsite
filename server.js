@@ -4,6 +4,7 @@ const path = require('path');
 const { URL } = require('url');
 const nodemailer = require('nodemailer');
 const db = require('./db');
+const auth = require('./auth');
 
 function loadConfig() {
   try {
@@ -32,7 +33,15 @@ function loadSmtpConfig() {
   return { host, port, user, pass, from };
 }
 
+// Email admin auto-approuve a l'inscription (et destinataire des
+// notifications de nouvelles demandes de compte). A defaut, seul le tout
+// premier compte cree sur l'instance est auto-approuve.
+function loadAdminEmail() {
+  return process.env.ADMIN_EMAIL || loadConfig().ADMIN_EMAIL || null;
+}
+
 const API_KEY = loadApiKey();
+const ADMIN_EMAIL = loadAdminEmail();
 const PORT = process.env.PORT || 3000;
 const PUBLIC_DIR = path.join(__dirname, 'public');
 
@@ -494,6 +503,7 @@ async function handleSendEmail(req, res) {
             place_id: rcpt.place_id,
             nom: rcpt.nom,
             adresse: rcpt.adresse,
+            telephone: rcpt.telephone,
             email: to,
             contacted_at: new Date().toISOString(),
           });
@@ -511,11 +521,185 @@ async function handleSendEmail(req, res) {
 }
 
 function handleListContacts(req, res) {
-  sendJSON(res, 200, { contacts: db.listAll() });
+  sendJSON(res, 200, { contacts: db.listAll(), statuses: db.STATUSES });
 }
 
-function serveStatic(req, res, pathname) {
+async function handleAddContact(req, res) {
+  try {
+    const raw = await readBody(req);
+    let payload;
+    try {
+      payload = JSON.parse(raw || '{}');
+    } catch {
+      return sendJSON(res, 400, { error: 'JSON invalide.' });
+    }
+    if (!payload.nom || !String(payload.nom).trim()) {
+      return sendJSON(res, 400, { error: "Le nom de l'etablissement est requis." });
+    }
+    const contact = db.addManual({
+      nom: String(payload.nom).trim(),
+      adresse: String(payload.adresse || '').trim(),
+      telephone: String(payload.telephone || '').trim(),
+      email: String(payload.email || '').trim(),
+      status: payload.status,
+      notes: String(payload.notes || '').trim(),
+    });
+    sendJSON(res, 200, { contact });
+  } catch (err) {
+    sendJSON(res, 400, { error: err.message });
+  }
+}
+
+async function handleUpdateContact(req, res, placeId) {
+  try {
+    const raw = await readBody(req);
+    let payload;
+    try {
+      payload = JSON.parse(raw || '{}');
+    } catch {
+      return sendJSON(res, 400, { error: 'JSON invalide.' });
+    }
+    const contact = db.updateEntry(placeId, payload);
+    sendJSON(res, 200, { contact });
+  } catch (err) {
+    sendJSON(res, 400, { error: err.message });
+  }
+}
+
+function handleDeleteContact(req, res, placeId) {
+  try {
+    db.removeEntry(placeId);
+    sendJSON(res, 200, { ok: true });
+  } catch (err) {
+    sendJSON(res, 404, { error: err.message });
+  }
+}
+
+// --- Authentification ---------------------------------------------------
+
+function isHttps(req) {
+  return !!(req.socket.encrypted || req.headers['x-forwarded-proto'] === 'https');
+}
+
+function userPublicView(user) {
+  return { email: user.email, isAdmin: !!user.isAdmin };
+}
+
+// Previent l'admin par mail qu'une nouvelle demande de compte attend une
+// approbation. Best-effort : silencieux si le SMTP n'est pas configure,
+// l'admin peut de toute facon voir la demande dans l'app.
+async function notifyAdminOfPendingUser(newUserEmail) {
+  const smtp = loadSmtpConfig();
+  if (!smtp || !ADMIN_EMAIL) return;
+  try {
+    const transporter = nodemailer.createTransport({
+      host: smtp.host,
+      port: smtp.port,
+      secure: smtp.port === 465,
+      auth: { user: smtp.user, pass: smtp.pass },
+    });
+    await transporter.sendMail({
+      from: smtp.from,
+      to: ADMIN_EMAIL,
+      subject: 'Nouvelle demande d\'acces - Entreprises sans site web',
+      text: `${newUserEmail} a demande un acces a l'outil. Connectez-vous pour approuver ou refuser cette demande.`,
+    });
+  } catch {
+    // Ignore : la demande reste visible dans l'app meme si le mail echoue.
+  }
+}
+
+async function handleRegister(req, res) {
+  try {
+    const raw = await readBody(req);
+    let payload;
+    try {
+      payload = JSON.parse(raw || '{}');
+    } catch {
+      return sendJSON(res, 400, { error: 'JSON invalide.' });
+    }
+    const user = auth.registerUser(payload.email, payload.password, ADMIN_EMAIL);
+    if (!user.approved) {
+      notifyAdminOfPendingUser(user.email);
+      return sendJSON(res, 200, {
+        pending: true,
+        message: "Compte cree. Il doit etre approuve par un administrateur avant de pouvoir vous connecter.",
+      });
+    }
+    const token = auth.createSession(user.id);
+    res.setHeader('Set-Cookie', auth.sessionCookieHeader(token, { secure: isHttps(req), maxAgeSeconds: auth.SESSION_TTL_MS / 1000 }));
+    sendJSON(res, 200, { pending: false, user: userPublicView(user) });
+  } catch (err) {
+    sendJSON(res, 400, { error: err.message });
+  }
+}
+
+async function handleLogin(req, res) {
+  try {
+    const raw = await readBody(req);
+    let payload;
+    try {
+      payload = JSON.parse(raw || '{}');
+    } catch {
+      return sendJSON(res, 400, { error: 'JSON invalide.' });
+    }
+    const user = auth.verifyLogin(payload.email, payload.password);
+    const token = auth.createSession(user.id);
+    res.setHeader('Set-Cookie', auth.sessionCookieHeader(token, { secure: isHttps(req), maxAgeSeconds: auth.SESSION_TTL_MS / 1000 }));
+    sendJSON(res, 200, { user: userPublicView(user) });
+  } catch (err) {
+    sendJSON(res, 401, { error: err.message });
+  }
+}
+
+function handleLogout(req, res, cookies) {
+  if (cookies[auth.SESSION_COOKIE]) auth.destroySession(cookies[auth.SESSION_COOKIE]);
+  res.setHeader('Set-Cookie', auth.clearSessionCookieHeader(isHttps(req)));
+  sendJSON(res, 200, { ok: true });
+}
+
+function handleMe(req, res, user) {
+  if (!user) return sendJSON(res, 401, { error: 'Non authentifie.' });
+  sendJSON(res, 200, { user: userPublicView(user) });
+}
+
+function handlePendingUsers(req, res, user) {
+  if (!user || !user.isAdmin) return sendJSON(res, 403, { error: 'Reserve aux administrateurs.' });
+  sendJSON(res, 200, { pending: auth.listPendingUsers() });
+}
+
+async function handleApproveUser(req, res, user, targetId) {
+  if (!user || !user.isAdmin) return sendJSON(res, 403, { error: 'Reserve aux administrateurs.' });
+  try {
+    auth.approveUser(targetId);
+    sendJSON(res, 200, { ok: true });
+  } catch (err) {
+    sendJSON(res, 404, { error: err.message });
+  }
+}
+
+async function handleRejectUser(req, res, user, targetId) {
+  if (!user || !user.isAdmin) return sendJSON(res, 403, { error: 'Reserve aux administrateurs.' });
+  try {
+    auth.rejectUser(targetId);
+    sendJSON(res, 200, { ok: true });
+  } catch (err) {
+    sendJSON(res, 404, { error: err.message });
+  }
+}
+
+function serveStatic(req, res, pathname, user) {
   const filePath = pathname === '/' ? '/index.html' : pathname;
+
+  if (filePath === '/index.html' && !user) {
+    res.writeHead(302, { Location: '/login.html' });
+    return res.end();
+  }
+  if (filePath === '/login.html' && user) {
+    res.writeHead(302, { Location: '/' });
+    return res.end();
+  }
+
   const fullPath = path.join(PUBLIC_DIR, filePath);
 
   if (!fullPath.startsWith(PUBLIC_DIR)) {
@@ -534,30 +718,97 @@ function serveStatic(req, res, pathname) {
   });
 }
 
+function requireAuth(res, user) {
+  if (!user) {
+    sendJSON(res, 401, { error: 'Authentification requise.' });
+    return false;
+  }
+  return true;
+}
+
 const server = http.createServer((req, res) => {
   const parsed = new URL(req.url, `http://${req.headers.host}`);
+  const cookies = auth.parseCookies(req);
+  const user = auth.getSessionUser(cookies[auth.SESSION_COOKIE]);
+
+  if (parsed.pathname === '/api/auth/register' && req.method === 'POST') {
+    handleRegister(req, res);
+    return;
+  }
+
+  if (parsed.pathname === '/api/auth/login' && req.method === 'POST') {
+    handleLogin(req, res);
+    return;
+  }
+
+  if (parsed.pathname === '/api/auth/logout' && req.method === 'POST') {
+    handleLogout(req, res, cookies);
+    return;
+  }
+
+  if (parsed.pathname === '/api/auth/me' && req.method === 'GET') {
+    handleMe(req, res, user);
+    return;
+  }
+
+  if (parsed.pathname === '/api/auth/pending' && req.method === 'GET') {
+    handlePendingUsers(req, res, user);
+    return;
+  }
+
+  if (parsed.pathname.startsWith('/api/auth/approve/') && req.method === 'POST') {
+    handleApproveUser(req, res, user, decodeURIComponent(parsed.pathname.slice('/api/auth/approve/'.length)));
+    return;
+  }
+
+  if (parsed.pathname.startsWith('/api/auth/reject/') && req.method === 'POST') {
+    handleRejectUser(req, res, user, decodeURIComponent(parsed.pathname.slice('/api/auth/reject/'.length)));
+    return;
+  }
 
   if (parsed.pathname === '/api/search' && req.method === 'GET') {
+    if (!requireAuth(res, user)) return;
     handleSearch(req, res, parsed.searchParams);
     return;
   }
 
   if (parsed.pathname === '/api/find-email' && req.method === 'GET') {
+    if (!requireAuth(res, user)) return;
     handleFindEmail(req, res, parsed.searchParams);
     return;
   }
 
   if (parsed.pathname === '/api/send-email' && req.method === 'POST') {
+    if (!requireAuth(res, user)) return;
     handleSendEmail(req, res);
     return;
   }
 
   if (parsed.pathname === '/api/contacts' && req.method === 'GET') {
+    if (!requireAuth(res, user)) return;
     handleListContacts(req, res);
     return;
   }
 
-  serveStatic(req, res, parsed.pathname);
+  if (parsed.pathname === '/api/contacts' && req.method === 'POST') {
+    if (!requireAuth(res, user)) return;
+    handleAddContact(req, res);
+    return;
+  }
+
+  if (parsed.pathname.startsWith('/api/contacts/') && req.method === 'PATCH') {
+    if (!requireAuth(res, user)) return;
+    handleUpdateContact(req, res, decodeURIComponent(parsed.pathname.slice('/api/contacts/'.length)));
+    return;
+  }
+
+  if (parsed.pathname.startsWith('/api/contacts/') && req.method === 'DELETE') {
+    if (!requireAuth(res, user)) return;
+    handleDeleteContact(req, res, decodeURIComponent(parsed.pathname.slice('/api/contacts/'.length)));
+    return;
+  }
+
+  serveStatic(req, res, parsed.pathname, user);
 });
 
 server.listen(PORT, () => {

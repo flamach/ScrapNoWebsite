@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Connexion — Entreprises sans site web</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%94%8E%3C/text%3E%3C/svg%3E">
+<script>
+  (function () {
+    var stored = localStorage.getItem('sansite-theme');
+    var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', theme);
+  })();
+</script>
+<style>
+  :root {
+    --accent: #0a84ff;
+    --accent-2: #7c5cff;
+    --text: #1c1c1e;
+    --text-muted: #6e6e73;
+    --bg-base: #eef1f7;
+    --blob-1: rgba(10, 132, 255, 0.35);
+    --blob-2: rgba(255, 55, 130, 0.22);
+    --blob-3: rgba(124, 92, 255, 0.28);
+    --glass-bg: rgba(255, 255, 255, 0.55);
+    --glass-bg-strong: rgba(255, 255, 255, 0.75);
+    --glass-border: rgba(255, 255, 255, 0.75);
+    --glass-shadow: 0 8px 32px rgba(31, 41, 55, 0.14), 0 1px 1px rgba(255, 255, 255, 0.6) inset;
+    --glass-highlight: rgba(255, 255, 255, 0.55);
+    --divider: rgba(60, 60, 67, 0.12);
+    --danger-bg: rgba(255, 59, 48, 0.12);
+    --danger-text: #c22b1f;
+    --success-bg: rgba(52, 199, 89, 0.14);
+    --success-text: #1f7a34;
+    --input-bg: rgba(255, 255, 255, 0.55);
+    --input-border: rgba(60, 60, 67, 0.16);
+  }
+  :root[data-theme="dark"] {
+    --text: #f5f5f7;
+    --text-muted: #9a9aa2;
+    --bg-base: #0c0c14;
+    --blob-1: rgba(10, 132, 255, 0.45);
+    --blob-2: rgba(255, 55, 130, 0.3);
+    --blob-3: rgba(124, 92, 255, 0.4);
+    --glass-bg: rgba(32, 32, 42, 0.55);
+    --glass-bg-strong: rgba(38, 38, 48, 0.78);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.55), 0 1px 1px rgba(255, 255, 255, 0.06) inset;
+    --glass-highlight: rgba(255, 255, 255, 0.06);
+    --divider: rgba(255, 255, 255, 0.08);
+    --danger-bg: rgba(255, 69, 58, 0.16);
+    --danger-text: #ff6b60;
+    --success-bg: rgba(48, 209, 88, 0.16);
+    --success-text: #4fda75;
+    --input-bg: rgba(20, 20, 28, 0.5);
+    --input-border: rgba(255, 255, 255, 0.12);
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg-base);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .backdrop { position: fixed; inset: 0; overflow: hidden; z-index: -1; }
+  .blob { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.9; }
+  .blob-1 { width: 620px; height: 620px; background: var(--blob-1); top: -180px; left: -120px; }
+  .blob-2 { width: 560px; height: 560px; background: var(--blob-2); bottom: -220px; right: -140px; }
+  .blob-3 { width: 480px; height: 480px; background: var(--blob-3); top: 35%; right: 10%; }
+
+  .card {
+    width: 100%;
+    max-width: 380px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 26px;
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    box-shadow: var(--glass-shadow);
+    padding: 32px 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(180deg, var(--glass-highlight), transparent 45%);
+    pointer-events: none;
+  }
+  h1 { font-size: 20px; font-weight: 700; margin: 0 0 6px; letter-spacing: -0.02em; }
+  p.subtitle { color: var(--text-muted); margin: 0 0 22px; font-size: 13px; line-height: 1.5; }
+
+  .field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 14px; }
+  .field label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; }
+  .field input {
+    padding: 11px 14px;
+    border: 1px solid var(--input-border);
+    background: var(--input-bg);
+    border-radius: 14px;
+    font-size: 14px;
+    color: var(--text);
+    font-family: inherit;
+    width: 100%;
+  }
+  .field input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.18);
+  }
+
+  .password-field { position: relative; }
+  .password-field input { padding-right: 42px; }
+  .password-toggle {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    border-radius: 10px;
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+  .password-toggle:hover { color: var(--text); background: var(--glass-bg-strong); }
+  .password-toggle svg { width: 18px; height: 18px; }
+  .password-toggle .icon-eye-off { display: none; }
+  .password-toggle.showing .icon-eye { display: none; }
+  .password-toggle.showing .icon-eye-off { display: block; }
+
+  button[type="submit"] {
+    width: 100%;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: white;
+    padding: 12px 26px;
+    border-radius: 999px;
+    box-shadow: 0 6px 20px rgba(10, 132, 255, 0.35);
+    margin-top: 4px;
+    transition: transform 0.15s ease, opacity 0.2s ease;
+  }
+  button[type="submit"]:hover { transform: translateY(-2px); }
+  button[type="submit"]:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+  .switch {
+    text-align: center;
+    margin-top: 18px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .switch a { color: var(--accent); text-decoration: none; font-weight: 600; cursor: pointer; }
+  .switch a:hover { text-decoration: underline; }
+
+  .banner {
+    padding: 12px 16px;
+    border-radius: 14px;
+    font-size: 13px;
+    margin-bottom: 16px;
+    display: none;
+    border: 1px solid transparent;
+    line-height: 1.5;
+  }
+  .banner.error { background: var(--danger-bg); color: var(--danger-text); display: block; border-color: rgba(255, 59, 48, 0.25); }
+  .banner.success { background: var(--success-bg); color: var(--success-text); display: block; border-color: rgba(52, 199, 89, 0.25); }
+
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="backdrop">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+</div>
+
+<div class="card">
+  <h1 id="title">Connexion</h1>
+  <p class="subtitle" id="subtitle">Accedez a l'outil de recherche d'entreprises sans site web.</p>
+  <div id="banner" class="banner"></div>
+
+  <form id="login-form">
+    <div class="field">
+      <label for="login-email">Email</label>
+      <input type="email" id="login-email" required autocomplete="username">
+    </div>
+    <div class="field">
+      <label for="login-password">Mot de passe</label>
+      <div class="password-field">
+        <input type="password" id="login-password" required autocomplete="current-password">
+        <button type="button" class="password-toggle" data-target="login-password" aria-label="Afficher le mot de passe">
+          <svg class="icon-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          <svg class="icon-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a18.5 18.5 0 0 1 5.06-5.94M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+        </button>
+      </div>
+    </div>
+    <button type="submit" id="login-submit">Se connecter</button>
+  </form>
+
+  <form id="register-form" class="hidden">
+    <div class="field">
+      <label for="register-email">Email</label>
+      <input type="email" id="register-email" required autocomplete="username">
+    </div>
+    <div class="field">
+      <label for="register-password">Mot de passe</label>
+      <div class="password-field">
+        <input type="password" id="register-password" required minlength="8" autocomplete="new-password">
+        <button type="button" class="password-toggle" data-target="register-password" aria-label="Afficher le mot de passe">
+          <svg class="icon-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          <svg class="icon-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a18.5 18.5 0 0 1 5.06-5.94M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+        </button>
+      </div>
+    </div>
+    <button type="submit" id="register-submit">Demander un acces</button>
+  </form>
+
+  <div class="switch">
+    <span id="switch-to-register">Pas encore de compte ? <a>Demander un acces</a></span>
+    <span id="switch-to-login" class="hidden">Deja un compte ? <a>Se connecter</a></span>
+  </div>
+</div>
+
+<script>
+const title = document.getElementById('title');
+const subtitle = document.getElementById('subtitle');
+const banner = document.getElementById('banner');
+const loginForm = document.getElementById('login-form');
+const registerForm = document.getElementById('register-form');
+const switchToRegister = document.getElementById('switch-to-register');
+const switchToLogin = document.getElementById('switch-to-login');
+
+function showBanner(type, message) {
+  banner.className = 'banner ' + type;
+  banner.textContent = message;
+}
+function hideBanner() {
+  banner.className = 'banner';
+  banner.textContent = '';
+}
+
+function showRegister() {
+  hideBanner();
+  title.textContent = 'Demander un acces';
+  subtitle.textContent = "Creez votre compte : il devra etre approuve par un administrateur avant de pouvoir vous connecter.";
+  loginForm.classList.add('hidden');
+  registerForm.classList.remove('hidden');
+  switchToRegister.classList.add('hidden');
+  switchToLogin.classList.remove('hidden');
+}
+function showLogin() {
+  hideBanner();
+  title.textContent = 'Connexion';
+  subtitle.textContent = "Accedez a l'outil de recherche d'entreprises sans site web.";
+  registerForm.classList.add('hidden');
+  loginForm.classList.remove('hidden');
+  switchToLogin.classList.add('hidden');
+  switchToRegister.classList.remove('hidden');
+}
+switchToRegister.querySelector('a').addEventListener('click', showRegister);
+switchToLogin.querySelector('a').addEventListener('click', showLogin);
+
+document.querySelectorAll('.password-toggle').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const input = document.getElementById(btn.dataset.target);
+    const showing = input.type === 'text';
+    input.type = showing ? 'password' : 'text';
+    btn.classList.toggle('showing', !showing);
+    btn.setAttribute('aria-label', showing ? 'Afficher le mot de passe' : 'Masquer le mot de passe');
+  });
+});
+
+loginForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  hideBanner();
+  const submitBtn = document.getElementById('login-submit');
+  submitBtn.disabled = true;
+  try {
+    const r = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: document.getElementById('login-email').value.trim(),
+        password: document.getElementById('login-password').value,
+      }),
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || 'Erreur inconnue.');
+    window.location.href = '/';
+  } catch (err) {
+    showBanner('error', err.message);
+  } finally {
+    submitBtn.disabled = false;
+  }
+});
+
+registerForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  hideBanner();
+  const submitBtn = document.getElementById('register-submit');
+  submitBtn.disabled = true;
+  try {
+    const r = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: document.getElementById('register-email').value.trim(),
+        password: document.getElementById('register-password').value,
+      }),
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || 'Erreur inconnue.');
+    if (data.pending) {
+      showBanner('success', data.message);
+      registerForm.reset();
+    } else {
+      window.location.href = '/';
+    }
+  } catch (err) {
+    showBanner('error', err.message);
+  } finally {
+    submitBtn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>

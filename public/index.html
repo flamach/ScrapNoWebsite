@@ -119,7 +119,7 @@
   }
 
   .container {
-    max-width: 1040px;
+    max-width: 1240px;
     margin: 0 auto;
     padding: 40px 20px 70px;
   }
@@ -269,6 +269,16 @@
   }
   #compose-send:hover { transform: translateY(-2px); }
   #compose-send:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  #tracking-form-save {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: white;
+    padding: 12px 26px;
+    border-radius: 999px;
+    box-shadow: 0 6px 20px rgba(10, 132, 255, 0.35);
+  }
+  #tracking-form-save:hover { transform: translateY(-2px); }
+  #tracking-form-save:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
 
   button.secondary {
     background: var(--glass-bg-strong);
@@ -558,9 +568,87 @@
   :root[data-theme="dark"] .duplicate-warning { color: #ffb454; }
   .duplicate-warning label { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-weight: 600; cursor: pointer; }
 
-  #history-btn {
-    flex-shrink: 0;
+  .tabs { display: flex; gap: 8px; margin-bottom: 22px; }
+  .tab-btn {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    color: var(--text-muted);
+    padding: 10px 22px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    backdrop-filter: blur(16px);
+    transition: transform 0.15s ease, color 0.2s ease, background 0.2s ease;
   }
+  .tab-btn:hover { transform: translateY(-1px); color: var(--text); }
+  .tab-btn.active {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 6px 18px rgba(10, 132, 255, 0.3);
+  }
+
+  .modal-field select {
+    padding: 11px 14px;
+    border: 1px solid var(--input-border);
+    background: var(--input-bg);
+    border-radius: 14px;
+    font-size: 14px;
+    color: var(--text);
+    font-family: inherit;
+  }
+
+  .status-select {
+    padding: 6px 10px;
+    border: 1px solid var(--input-border);
+    background: var(--input-bg);
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  .notes-cell { white-space: pre-wrap; }
+
+  #tab-tracking table { table-layout: fixed; }
+  #tab-tracking th:nth-child(1), #tab-tracking td:nth-child(1) { width: 11%; }
+  #tab-tracking th:nth-child(2), #tab-tracking td:nth-child(2) { width: 16%; }
+  #tab-tracking th:nth-child(3), #tab-tracking td:nth-child(3) { width: 9%; }
+  #tab-tracking th:nth-child(4), #tab-tracking td:nth-child(4) { width: 13%; }
+  #tab-tracking th:nth-child(5), #tab-tracking td:nth-child(5) { width: 11%; }
+  #tab-tracking th:nth-child(6), #tab-tracking td:nth-child(6) { width: 14%; }
+  #tab-tracking th:nth-child(7), #tab-tracking td:nth-child(7) { width: 10%; }
+  #tab-tracking th:nth-child(8), #tab-tracking td:nth-child(8) { width: 10%; }
+  #tab-tracking th:nth-child(9), #tab-tracking td:nth-child(9) { width: 6%; }
+  #tab-tracking td { overflow-wrap: break-word; word-break: break-word; }
+  #tab-tracking td:nth-child(7), #tab-tracking td:nth-child(8) { white-space: nowrap; }
+  #tab-tracking .status-select { max-width: 100%; }
+
+  .icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-radius: 10px;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .icon-btn svg { width: 16px; height: 16px; }
+  .icon-btn:hover { background: var(--row-hover); color: var(--accent); }
+  .icon-btn.danger:hover { background: var(--danger-bg); color: var(--danger-text); }
+
+  .row-actions { display: flex; flex-direction: column; gap: 2px; }
+
+  tr[data-status="signe"] td { background: rgba(52, 199, 89, 0.08); }
+  tr[data-status="refuse"] td { background: rgba(255, 59, 48, 0.08); }
 
   .history-table { width: 100%; border-collapse: collapse; font-size: 13px; }
   .history-table th, .history-table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--divider); }
@@ -581,8 +669,10 @@
       <h1>Entreprises sans site web</h1>
       <p class="subtitle">Recherche via Google Places : indiquez un code postal et une categorie (ex. restaurant, plombier, coiffeur) pour lister les etablissements qui n'ont pas de site web renseigne sur Google. La zone est automatiquement subdivisee en sous-cercles la ou c'est necessaire, sans reglage a faire.</p>
     </div>
-    <div style="display:flex; gap:10px; align-items:flex-start;">
-      <button type="button" class="secondary" id="history-btn">Historique des contacts</button>
+    <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+      <span id="user-email" style="font-size:13px; color:var(--text-muted);"></span>
+      <button type="button" class="secondary" id="pending-btn" style="display:none;">Comptes en attente</button>
+      <button type="button" class="secondary" id="logout-btn">Deconnexion</button>
       <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Changer de theme">
         <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
         <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
@@ -590,55 +680,95 @@
     </div>
   </div>
 
-  <div class="glass">
-    <form id="search-form">
-      <div class="field">
-        <label for="postalCode">Code postal</label>
-        <input type="text" id="postalCode" name="postalCode" placeholder="75011" pattern="\d{5}" maxlength="5" required>
-      </div>
-      <div class="field">
-        <label for="tag">Tag / categorie</label>
-        <input type="text" id="tag" name="tag" placeholder="restaurant" required>
-      </div>
-      <div class="field">
-        <label for="radius">Rayon (metres)</label>
-        <input type="number" id="radius" name="radius" value="4000" min="200" max="50000" step="100">
-      </div>
-      <div class="field">
-        <button type="submit" id="submit-btn">Rechercher</button>
-      </div>
-    </form>
-    <div id="status"></div>
+  <div class="tabs">
+    <button type="button" class="tab-btn active" data-tab="search">Recherche</button>
+    <button type="button" class="tab-btn" data-tab="tracking">Suivi commercial</button>
   </div>
 
-  <div id="banner" class="banner"></div>
+  <div id="tab-search">
+    <div class="glass">
+      <form id="search-form">
+        <div class="field">
+          <label for="postalCode">Code postal</label>
+          <input type="text" id="postalCode" name="postalCode" placeholder="75011" pattern="\d{5}" maxlength="5" required>
+        </div>
+        <div class="field">
+          <label for="tag">Tag / categorie</label>
+          <input type="text" id="tag" name="tag" placeholder="restaurant" required>
+        </div>
+        <div class="field">
+          <label for="radius">Rayon (metres)</label>
+          <input type="number" id="radius" name="radius" value="4000" min="200" max="50000" step="100">
+        </div>
+        <div class="field">
+          <button type="submit" id="submit-btn">Rechercher</button>
+        </div>
+      </form>
+      <div id="status"></div>
+    </div>
 
-  <div class="glass" id="results-card" style="display:none;">
-    <div class="summary">
-      <div class="count" id="summary-text"></div>
-      <div class="summary-actions">
-        <button class="secondary" id="send-mail-btn" disabled>Envoyer un mail (<span id="selected-count">0</span>)</button>
-        <button class="secondary" id="download-btn">Telecharger le CSV</button>
+    <div id="banner" class="banner"></div>
+
+    <div class="glass" id="results-card" style="display:none;">
+      <div class="summary">
+        <div class="count" id="summary-text"></div>
+        <div class="summary-actions">
+          <button class="secondary" id="send-mail-btn" disabled>Envoyer un mail (<span id="selected-count">0</span>)</button>
+          <button class="secondary" id="download-btn">Telecharger le CSV</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="checkbox-col"><input type="checkbox" id="select-all" title="Tout selectionner"></th>
+              <th>Nom</th>
+              <th>Adresse</th>
+              <th>Telephone</th>
+              <th class="sortable" data-sort-key="email" title="Trier par email trouve ou non">Email</th>
+              <th class="sortable" data-sort-key="note" title="Trier par note">Note</th>
+              <th class="sortable" data-sort-key="avis" title="Trier par nombre d'avis">Avis</th>
+              <th>Types</th>
+              <th>Fiche Google</th>
+            </tr>
+          </thead>
+          <tbody id="results-body"></tbody>
+        </table>
+        <div class="empty-state" id="empty-state" style="display:none;"><span class="emoji">🔍</span>Aucun etablissement sans site web trouve pour cette recherche.</div>
       </div>
     </div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th class="checkbox-col"><input type="checkbox" id="select-all" title="Tout selectionner"></th>
-            <th>Nom</th>
-            <th>Adresse</th>
-            <th>Telephone</th>
-            <th class="sortable" data-sort-key="email" title="Trier par email trouve ou non">Email</th>
-            <th class="sortable" data-sort-key="note" title="Trier par note">Note</th>
-            <th class="sortable" data-sort-key="avis" title="Trier par nombre d'avis">Avis</th>
-            <th>Types</th>
-            <th>Fiche Google</th>
-          </tr>
-        </thead>
-        <tbody id="results-body"></tbody>
-      </table>
-      <div class="empty-state" id="empty-state" style="display:none;"><span class="emoji">🔍</span>Aucun etablissement sans site web trouve pour cette recherche.</div>
+  </div>
+
+  <div id="tab-tracking" style="display:none;">
+    <div class="glass">
+      <div class="summary">
+        <div class="count" id="tracking-summary">Chargement...</div>
+        <div class="summary-actions">
+          <select id="tracking-status-filter" class="status-select">
+            <option value="all">Tous les statuts</option>
+          </select>
+          <button class="secondary" id="tracking-add-btn">+ Ajouter un etablissement</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Adresse</th>
+              <th>Telephone</th>
+              <th>Email</th>
+              <th>Statut</th>
+              <th>Notes</th>
+              <th class="sortable" data-sort-key="created_at" title="Trier par date d'ajout">Date d'ajout</th>
+              <th class="sortable" data-sort-key="updated_at" title="Trier par date de mise a jour">Mis a jour</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tracking-body"></tbody>
+        </table>
+        <div class="empty-state" id="tracking-empty" style="display:none;"><span class="emoji">📋</span><span id="tracking-empty-text">Aucun etablissement suivi pour le moment.</span></div>
+      </div>
     </div>
   </div>
 </div>
@@ -665,30 +795,153 @@
   </div>
 </div>
 
-<div class="modal-overlay" id="history-overlay">
-  <div class="glass modal-card" style="max-width:720px;">
-    <h2>Historique des contacts</h2>
-    <p class="modal-sub" id="history-sub">Chargement...</p>
+<div class="modal-overlay" id="tracking-form-overlay">
+  <div class="glass modal-card">
+    <h2 id="tracking-form-title">Ajouter un etablissement</h2>
+    <p class="modal-sub">Suivez manuellement l'avancement de votre prospection.</p>
+    <div class="modal-field">
+      <label for="tf-nom">Nom</label>
+      <input type="text" id="tf-nom">
+    </div>
+    <div class="modal-field">
+      <label for="tf-adresse">Adresse</label>
+      <input type="text" id="tf-adresse">
+    </div>
+    <div class="modal-field">
+      <label for="tf-telephone">Telephone</label>
+      <input type="text" id="tf-telephone">
+    </div>
+    <div class="modal-field">
+      <label for="tf-email">Email</label>
+      <input type="email" id="tf-email">
+    </div>
+    <div class="modal-field">
+      <label for="tf-status">Statut</label>
+      <select id="tf-status"></select>
+    </div>
+    <div class="modal-field">
+      <label for="tf-notes">Notes</label>
+      <textarea id="tf-notes" style="min-height:100px;"></textarea>
+    </div>
+    <div id="tracking-form-error" class="banner error" style="display:none;"></div>
+    <div class="modal-actions">
+      <button class="secondary" id="tracking-form-cancel">Annuler</button>
+      <button id="tracking-form-save" type="button">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="pending-overlay">
+  <div class="glass modal-card" style="max-width:640px;">
+    <h2>Comptes en attente</h2>
+    <p class="modal-sub" id="pending-sub">Chargement...</p>
     <div class="history-wrap">
       <table class="history-table">
         <thead>
           <tr>
-            <th>Nom</th>
-            <th>Adresse</th>
             <th>Email</th>
-            <th>Contacte le</th>
+            <th>Demande le</th>
+            <th></th>
           </tr>
         </thead>
-        <tbody id="history-body"></tbody>
+        <tbody id="pending-body"></tbody>
       </table>
     </div>
     <div class="modal-actions">
-      <button class="secondary" id="history-close">Fermer</button>
+      <button class="secondary" id="pending-close">Fermer</button>
     </div>
   </div>
 </div>
 
 <script>
+// --- Authentification ----------------------------------------------------
+
+const _fetch = window.fetch;
+window.fetch = async (...args) => {
+  const r = await _fetch(...args);
+  if (r.status === 401 && !String(args[0]).includes('/api/auth/')) {
+    window.location.href = '/login.html';
+  }
+  return r;
+};
+
+const userEmailEl = document.getElementById('user-email');
+const pendingBtn = document.getElementById('pending-btn');
+const logoutBtn = document.getElementById('logout-btn');
+const pendingOverlay = document.getElementById('pending-overlay');
+const pendingSub = document.getElementById('pending-sub');
+const pendingBody = document.getElementById('pending-body');
+const pendingCloseBtn = document.getElementById('pending-close');
+
+async function initAuth() {
+  const r = await _fetch('/api/auth/me');
+  if (!r.ok) {
+    window.location.href = '/login.html';
+    return;
+  }
+  const data = await r.json();
+  userEmailEl.textContent = data.user.email;
+  if (data.user.isAdmin) {
+    pendingBtn.style.display = 'inline-flex';
+  }
+}
+initAuth();
+
+logoutBtn.addEventListener('click', async () => {
+  await fetch('/api/auth/logout', { method: 'POST' });
+  window.location.href = '/login.html';
+});
+
+async function openPendingModal() {
+  pendingOverlay.classList.add('open');
+  pendingSub.textContent = 'Chargement...';
+  pendingBody.innerHTML = '';
+  try {
+    const r = await fetch('/api/auth/pending');
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || 'Erreur inconnue');
+
+    pendingSub.textContent = data.pending.length
+      ? `${data.pending.length} demande(s) en attente.`
+      : 'Aucune demande en attente.';
+    pendingBody.innerHTML = data.pending.map((u) => `
+      <tr data-id="${escHtml(u.id)}">
+        <td>${escHtml(u.email)}</td>
+        <td>${escHtml(formatDate(u.createdAt))}</td>
+        <td style="display:flex; gap:8px;">
+          <button type="button" class="secondary approve-btn" data-id="${escHtml(u.id)}">Approuver</button>
+          <button type="button" class="secondary reject-btn" data-id="${escHtml(u.id)}">Refuser</button>
+        </td>
+      </tr>
+    `).join('') || '<tr><td colspan="3" style="text-align:center; color:var(--text-muted); padding:24px;">Aucune demande en attente.</td></tr>';
+  } catch (err) {
+    pendingSub.textContent = '';
+    pendingBody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--danger-text); padding:24px;">${escHtml(err.message)}</td></tr>`;
+  }
+}
+
+pendingBtn.addEventListener('click', openPendingModal);
+pendingCloseBtn.addEventListener('click', () => pendingOverlay.classList.remove('open'));
+pendingOverlay.addEventListener('click', (e) => {
+  if (e.target === pendingOverlay) pendingOverlay.classList.remove('open');
+});
+
+pendingBody.addEventListener('click', async (e) => {
+  const approveId = e.target.classList.contains('approve-btn') ? e.target.dataset.id : null;
+  const rejectId = e.target.classList.contains('reject-btn') ? e.target.dataset.id : null;
+  const id = approveId || rejectId;
+  if (!id) return;
+  e.target.disabled = true;
+  try {
+    const r = await fetch(`/api/auth/${approveId ? 'approve' : 'reject'}/${encodeURIComponent(id)}`, { method: 'POST' });
+    if (!r.ok) throw new Error((await r.json()).error || 'Erreur inconnue');
+    openPendingModal();
+  } catch (err) {
+    e.target.disabled = false;
+    alert(err.message);
+  }
+});
+
 const themeToggle = document.getElementById('theme-toggle');
 themeToggle.addEventListener('click', () => {
   const current = document.documentElement.getAttribute('data-theme');
@@ -880,7 +1133,7 @@ function getSortValue(idx, key) {
 }
 
 function updateSortIndicators() {
-  document.querySelectorAll('th.sortable').forEach((th) => {
+  document.querySelectorAll('#results-card th.sortable').forEach((th) => {
     th.classList.remove('sort-asc', 'sort-desc');
     if (th.dataset.sortKey === sortState.key) {
       th.classList.add(sortState.dir === 1 ? 'sort-asc' : 'sort-desc');
@@ -903,7 +1156,7 @@ function applySort() {
   updateSortIndicators();
 }
 
-document.querySelectorAll('th.sortable').forEach((th) => {
+document.querySelectorAll('#results-card th.sortable').forEach((th) => {
   th.addEventListener('click', () => {
     const key = th.dataset.sortKey;
     if (sortState.key === key) sortState.dir *= -1;
@@ -998,7 +1251,7 @@ function openComposeModal() {
       missingEmail.push(row.nom);
       continue;
     }
-    recipients.push({ idx, place_id: row.place_id, nom: row.nom, adresse: row.adresse, email });
+    recipients.push({ idx, place_id: row.place_id, nom: row.nom, adresse: row.adresse, telephone: row.telephone, email });
     if (row.contacted) duplicates.push(`${row.nom} (le ${formatDate(row.contactedAt)})`);
   }
 
@@ -1068,7 +1321,7 @@ composeSendBtn.addEventListener('click', async () => {
       body: JSON.stringify({
         subject,
         body,
-        recipients: recipients.map((r) => ({ to: r.email, nom: r.nom, adresse: r.adresse, place_id: r.place_id })),
+        recipients: recipients.map((r) => ({ to: r.email, nom: r.nom, adresse: r.adresse, telephone: r.telephone, place_id: r.place_id })),
       }),
     });
     const data = await r.json();
@@ -1115,42 +1368,261 @@ composeSendBtn.addEventListener('click', async () => {
   }
 });
 
-// --- Historique des contacts --------------------------------------------
+// --- Onglets --------------------------------------------------------------
 
-const historyBtn = document.getElementById('history-btn');
-const historyOverlay = document.getElementById('history-overlay');
-const historySub = document.getElementById('history-sub');
-const historyBody = document.getElementById('history-body');
-const historyCloseBtn = document.getElementById('history-close');
+const tabButtons = document.querySelectorAll('.tab-btn');
+const tabSearch = document.getElementById('tab-search');
+const tabTracking = document.getElementById('tab-tracking');
 
-async function openHistoryModal() {
-  historyOverlay.classList.add('open');
-  historySub.textContent = 'Chargement...';
-  historyBody.innerHTML = '';
+tabButtons.forEach((btn) => {
+  btn.addEventListener('click', () => {
+    tabButtons.forEach((b) => b.classList.remove('active'));
+    btn.classList.add('active');
+    const tab = btn.dataset.tab;
+    tabSearch.style.display = tab === 'search' ? '' : 'none';
+    tabTracking.style.display = tab === 'tracking' ? '' : 'none';
+    if (tab === 'tracking') loadTracking();
+  });
+});
+
+// --- Suivi commercial ------------------------------------------------------
+
+const STATUS_LABELS = {
+  a_contacter: 'A contacter',
+  contacte: 'Contacte',
+  relance: 'Relance',
+  interesse: 'Interesse',
+  rdv: 'Rendez-vous',
+  signe: 'Signe',
+  refuse: 'Refuse',
+  sans_reponse: 'Sans reponse',
+};
+const statusOrder = Object.keys(STATUS_LABELS);
+
+const trackingBody = document.getElementById('tracking-body');
+const trackingSummary = document.getElementById('tracking-summary');
+const trackingEmpty = document.getElementById('tracking-empty');
+const trackingAddBtn = document.getElementById('tracking-add-btn');
+const trackingFormOverlay = document.getElementById('tracking-form-overlay');
+const trackingFormTitle = document.getElementById('tracking-form-title');
+const trackingFormError = document.getElementById('tracking-form-error');
+const tfNom = document.getElementById('tf-nom');
+const tfAdresse = document.getElementById('tf-adresse');
+const tfTelephone = document.getElementById('tf-telephone');
+const tfEmail = document.getElementById('tf-email');
+const tfStatus = document.getElementById('tf-status');
+const tfNotes = document.getElementById('tf-notes');
+const trackingFormCancel = document.getElementById('tracking-form-cancel');
+const trackingFormSave = document.getElementById('tracking-form-save');
+const trackingStatusFilter = document.getElementById('tracking-status-filter');
+
+tfStatus.innerHTML = statusOrder.map((s) => `<option value="${s}">${STATUS_LABELS[s]}</option>`).join('');
+trackingStatusFilter.insertAdjacentHTML('beforeend', statusOrder.map((s) => `<option value="${s}">${STATUS_LABELS[s]}</option>`).join(''));
+
+let editingId = null;
+let trackingData = [];
+let trackingSortState = { key: null, dir: 1 };
+
+trackingStatusFilter.addEventListener('change', renderTracking);
+
+function openTrackingForm(entry) {
+  editingId = entry ? entry.place_id : null;
+  trackingFormTitle.textContent = entry ? "Modifier l'etablissement" : 'Ajouter un etablissement';
+  trackingFormError.style.display = 'none';
+  tfNom.value = entry ? entry.nom : '';
+  tfAdresse.value = entry ? entry.adresse : '';
+  tfTelephone.value = entry ? entry.telephone : '';
+  tfEmail.value = entry ? entry.email : '';
+  tfStatus.value = entry ? entry.status : 'a_contacter';
+  tfNotes.value = entry ? entry.notes : '';
+  trackingFormOverlay.classList.add('open');
+}
+function closeTrackingForm() {
+  trackingFormOverlay.classList.remove('open');
+}
+
+trackingAddBtn.addEventListener('click', () => openTrackingForm(null));
+trackingFormCancel.addEventListener('click', closeTrackingForm);
+trackingFormOverlay.addEventListener('click', (e) => {
+  if (e.target === trackingFormOverlay) closeTrackingForm();
+});
+
+trackingFormSave.addEventListener('click', async () => {
+  const nom = tfNom.value.trim();
+  if (!nom) {
+    trackingFormError.style.display = 'block';
+    trackingFormError.textContent = "Le nom de l'etablissement est requis.";
+    return;
+  }
+  const payload = {
+    nom,
+    adresse: tfAdresse.value.trim(),
+    telephone: tfTelephone.value.trim(),
+    email: tfEmail.value.trim(),
+    status: tfStatus.value,
+    notes: tfNotes.value.trim(),
+  };
+  trackingFormSave.disabled = true;
+  try {
+    const url = editingId ? `/api/contacts/${encodeURIComponent(editingId)}` : '/api/contacts';
+    const r = await fetch(url, {
+      method: editingId ? 'PATCH' : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || 'Erreur inconnue.');
+    closeTrackingForm();
+    loadTracking();
+  } catch (err) {
+    trackingFormError.style.display = 'block';
+    trackingFormError.textContent = err.message;
+  } finally {
+    trackingFormSave.disabled = false;
+  }
+});
+
+function getVisibleTracking() {
+  let list = trackingData;
+  if (trackingStatusFilter.value !== 'all') {
+    list = list.filter((c) => c.status === trackingStatusFilter.value);
+  }
+  if (trackingSortState.key) {
+    const key = trackingSortState.key;
+    const dir = trackingSortState.dir;
+    list = [...list].sort((a, b) => {
+      const av = a[key] || '';
+      const bv = b[key] || '';
+      if (av < bv) return -1 * dir;
+      if (av > bv) return 1 * dir;
+      return 0;
+    });
+  }
+  return list;
+}
+
+function updateTrackingSortIndicators() {
+  document.querySelectorAll('#tab-tracking th.sortable').forEach((th) => {
+    th.classList.remove('sort-asc', 'sort-desc');
+    if (th.dataset.sortKey === trackingSortState.key) {
+      th.classList.add(trackingSortState.dir === 1 ? 'sort-asc' : 'sort-desc');
+    }
+  });
+}
+
+function renderTracking() {
+  updateTrackingSortIndicators();
+  const visible = getVisibleTracking();
+
+  trackingSummary.textContent = trackingData.length
+    ? (visible.length === trackingData.length
+      ? `${trackingData.length} etablissement(s) suivi(s).`
+      : `${visible.length} sur ${trackingData.length} etablissement(s) suivi(s).`)
+    : '';
+
+  if (!visible.length) {
+    trackingBody.innerHTML = '';
+    document.getElementById('tracking-empty-text').textContent = trackingData.length
+      ? 'Aucun etablissement ne correspond a ce statut.'
+      : 'Aucun etablissement suivi pour le moment.';
+    trackingEmpty.style.display = 'block';
+    return;
+  }
+  trackingEmpty.style.display = 'none';
+  trackingBody.innerHTML = visible.map((c) => `
+    <tr data-id="${escHtml(c.place_id)}" data-status="${escHtml(c.status)}">
+      <td>${escHtml(c.nom)}</td>
+      <td>${escHtml(c.adresse)}</td>
+      <td>${escHtml(c.telephone)}</td>
+      <td>${escHtml(c.email)}</td>
+      <td>
+        <select class="status-select" data-id="${escHtml(c.place_id)}">
+          ${statusOrder.map((s) => `<option value="${s}" ${s === c.status ? 'selected' : ''}>${STATUS_LABELS[s]}</option>`).join('')}
+        </select>
+      </td>
+      <td class="notes-cell">${escHtml(c.notes)}</td>
+      <td>${escHtml(formatDate(c.created_at))}</td>
+      <td>${escHtml(formatDate(c.updated_at))}</td>
+      <td>
+        <div class="row-actions">
+          <button type="button" class="icon-btn tracking-edit-btn" data-id="${escHtml(c.place_id)}" title="Modifier" aria-label="Modifier">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
+          </button>
+          <button type="button" class="icon-btn danger tracking-delete-btn" data-id="${escHtml(c.place_id)}" title="Supprimer" aria-label="Supprimer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path></svg>
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+document.querySelectorAll('#tab-tracking th.sortable').forEach((th) => {
+  th.addEventListener('click', () => {
+    const key = th.dataset.sortKey;
+    if (trackingSortState.key === key) trackingSortState.dir *= -1;
+    else { trackingSortState.key = key; trackingSortState.dir = 1; }
+    renderTracking();
+  });
+});
+
+async function loadTracking() {
+  trackingSummary.textContent = 'Chargement...';
   try {
     const r = await fetch('/api/contacts');
     const data = await r.json();
     if (!r.ok) throw new Error(data.error || 'Erreur inconnue');
-
-    historySub.textContent = `${data.contacts.length} etablissement(s) contacte(s) au total.`;
-    historyBody.innerHTML = data.contacts.map((c) => `
-      <tr>
-        <td>${escHtml(c.nom)}</td>
-        <td>${escHtml(c.adresse)}</td>
-        <td>${escHtml(c.email)}</td>
-        <td>${escHtml(formatDate(c.contacted_at))}</td>
-      </tr>
-    `).join('') || '<tr><td colspan="4" style="text-align:center; color:var(--text-muted); padding:24px;">Aucun contact enregistre pour le moment.</td></tr>';
+    trackingData = data.contacts;
+    renderTracking();
   } catch (err) {
-    historySub.textContent = '';
-    historyBody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--danger-text); padding:24px;">${escHtml(err.message)}</td></tr>`;
+    trackingSummary.textContent = '';
+    trackingEmpty.style.display = 'none';
+    trackingBody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:var(--danger-text); padding:24px;">${escHtml(err.message)}</td></tr>`;
   }
 }
 
-historyBtn.addEventListener('click', openHistoryModal);
-historyCloseBtn.addEventListener('click', () => historyOverlay.classList.remove('open'));
-historyOverlay.addEventListener('click', (e) => {
-  if (e.target === historyOverlay) historyOverlay.classList.remove('open');
+trackingBody.addEventListener('change', async (e) => {
+  if (!e.target.classList.contains('status-select')) return;
+  const id = e.target.dataset.id;
+  const status = e.target.value;
+  e.target.disabled = true;
+  try {
+    const r = await fetch(`/api/contacts/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    });
+    if (!r.ok) throw new Error((await r.json()).error || 'Erreur inconnue.');
+    const entry = trackingData.find((c) => c.place_id === id);
+    if (entry) entry.status = status;
+    const tr = e.target.closest('tr');
+    if (tr) tr.dataset.status = status;
+  } catch (err) {
+    alert(err.message);
+    loadTracking();
+  } finally {
+    e.target.disabled = false;
+  }
+});
+
+trackingBody.addEventListener('click', (e) => {
+  const editBtn = e.target.closest('.tracking-edit-btn');
+  const deleteBtn = e.target.closest('.tracking-delete-btn');
+  if (editBtn) {
+    const entry = trackingData.find((c) => c.place_id === editBtn.dataset.id);
+    if (entry) openTrackingForm(entry);
+    return;
+  }
+  if (deleteBtn) {
+    const deleteId = deleteBtn.dataset.id;
+    if (!confirm('Supprimer definitivement cet etablissement du suivi ?')) return;
+    fetch(`/api/contacts/${encodeURIComponent(deleteId)}`, { method: 'DELETE' })
+      .then((r) => {
+        if (!r.ok) throw new Error('Erreur lors de la suppression.');
+        loadTracking();
+      })
+      .catch((err) => alert(err.message));
+  }
 });
 
 downloadBtn.addEventListener('click', () => {
